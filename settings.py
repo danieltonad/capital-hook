@@ -25,6 +25,9 @@ class Settings:
     
     session: AsyncClient = AsyncClient()
     
+    def __init__(self):
+        self.TRADE_MODE = TradeMode.DEMO
+    
     
     def update_trade_mode(self, trade_mode: TradeMode):
         self.TRADE_MODE = trade_mode

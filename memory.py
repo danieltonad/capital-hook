@@ -4,6 +4,8 @@ class Memory:
         self.positions: dict = {}
         self.deal_ids: set = set()
         self.capital_auth_header: dict = {}
+        epics: list = []
+        instruments: dict = {}
         
         
     def update_position(self, key: str):
@@ -19,6 +21,10 @@ class Memory:
             
     def update_capital_auth_header(self, header: dict):
         self.capital_auth_header = header
+    
+    def update_epics(self, epics: list, instruments: dict):
+        self.epics = epics
+        self.instruments = instruments
     
     
     
