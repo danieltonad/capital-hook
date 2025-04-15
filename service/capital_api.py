@@ -4,7 +4,7 @@ from enums.trade import TradeDirection
 from memory import memory
 
 
-async def new_auth_header() -> dict:
+async def update_auth_header() -> dict:
         try:
             payload = json.dumps({
             "identifier": settings.CAPITAL_IDENTITY,
@@ -25,7 +25,7 @@ async def new_auth_header() -> dict:
             
         except Exception as e:
             await asyncio.sleep(100)
-            return await new_auth_header()
+            return await update_auth_header()
         
         
 async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection) -> str:
@@ -158,6 +158,7 @@ async def get_all_epics() -> list:
         if response.status_code == 200:
             data = response.json()
             markets = data.get("markets", [])
+            print(markets[:5])
             for market in markets:
                 epics.add(market["epic"])
         else:
