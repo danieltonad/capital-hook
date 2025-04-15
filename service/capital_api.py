@@ -4,7 +4,7 @@ from enums.trade import TradeDirection
 from memory import memory
 
 
-async def update_auth_header() -> dict:
+async def update_auth_header() -> None:
         try:
             payload = json.dumps({
             "identifier": settings.CAPITAL_IDENTITY,
@@ -24,8 +24,9 @@ async def update_auth_header() -> dict:
             memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
             
         except Exception as e:
+            print(e)
             await asyncio.sleep(100)
-            return await update_auth_header()
+            # return await update_auth_header()
         
         
 async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection) -> str:
@@ -148,9 +149,10 @@ async def close_trade(self, epic: str, size: float, deal_id: str, retry: int = 0
         
    
 
-async def get_all_epics() -> list:
+async def update_markets() -> None:
     try:
-        epics = set()  # Use a set to avoid duplicates
+        epics = set()
+        instruments = {} # Use a set to avoid duplicates
         response = await settings.session.get(
             f"{settings.get_capital_host()}/api/v1/markets",
             headers=memory.capital_auth_header
@@ -158,16 +160,18 @@ async def get_all_epics() -> list:
         if response.status_code == 200:
             data = response.json()
             markets = data.get("markets", [])
-            print(markets[:5])
+            
             for market in markets:
                 epics.add(market["epic"])
+                instruments[market["epic"]] = market["instrumentType"]
         else:
             # await Logger.app_log(
             #     title="EPICS_FAIL",
             #     message=f"Status {response.status_code}: {response.text}"
             # )
             return [] 
-        return list(sorted(epics))
+        memory.update_epics(epics=list(sorted(epics)), instruments=instruments)
+        # return list(sorted(epics)), instruments
     except Exception as e:
         # await Logger.app_log(title="EPICS_ERR", message=str(e))
         return []   
