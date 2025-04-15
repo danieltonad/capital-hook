@@ -10,7 +10,7 @@ class Settings:
     """
     Settings class to manage application settings.
     """
-            
+
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"
     CAPITAL_HOST_DEMO: str = "https://demo-api-capital.backend-capital.com"
     
