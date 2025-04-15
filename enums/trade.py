@@ -10,4 +10,9 @@ class ExitType(Enum):
     TP = "TP"
     SL = "SL"
     USER = "USER"
+    
+    
+class TradeMode(Enum):
+    DEMO = "DEMO"
+    LIVE = "LIVE"
 
