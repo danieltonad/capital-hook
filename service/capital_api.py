@@ -27,7 +27,7 @@ async def update_auth_header() -> None:
         except Exception as e:
             await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
             await asyncio.sleep(100)
-            # return await update_auth_header()
+            return await update_auth_header()
         
         
 async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection) -> str:
@@ -51,8 +51,6 @@ async def get_open_positions() -> list:
         if response.status_code == 200:
             data = response.json()
             positions = data.get("positions", [])
-            # Format each position into a simple dict
-            # print(positions)
             open_positions = [
                 {
                     "epic": pos["market"]["epic"],
@@ -77,7 +75,7 @@ async def get_open_positions() -> list:
         return []
         
     
-async def get_open_positions_pnl(self) -> float:
+async def get_open_positions_pnl() -> float:
     try:
         open_positions = await get_open_positions()
         total_pnl = sum(pos["pnl"] for pos in open_positions)
@@ -126,23 +124,23 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
 async def close_trade(self, epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
     try:
         # Use PUT to close specific position
-        response = await settings.SESSION.delete(
-            f"{settings.CAPITAL_HOST}/api/v1/positions/{deal_id}",
+        response = await settings.session.delete(
+            f"{settings.get_capital_host()}/api/v1/positions/{deal_id}",
             headers= await self.get_auth_header()
         )
         if response.status_code == 200:
             data = response.json()
-            # await Logger.app_log(
-            #     title="CLOSE_SUCCESS",
-            #     message=f"Closed {size} of {epic}: {data}"
-            # )
+            await Logger.app_log(
+                title="CLOSE_SUCCESS",
+                message=f"Closed {size} of {epic}: {data}"
+            )
             memory.remove_deal_id(deal_id)  # Remove deal ID from settings
             return data.get("dealReference", False)
         
         raise ValueError(f"Failed to close trade: {response.status_code} => {response.text}")
     
     except Exception as e:
-        # await Logger.app_log(title=f"[{epic}]_CLOSE_TRADE_ERR", message=str(e))
+        await Logger.app_log(title=f"{epic}_CLOSE_TRADE_ERR", message=str(e))
         if retry < 3:
             await asyncio.sleep(30)
             return await self.close_trade(epic, size, deal_id, retry + 1)
@@ -166,15 +164,15 @@ async def update_markets() -> None:
                 epics.add(market["epic"])
                 instruments[market["epic"]] = market["instrumentType"]
         else:
-            # await Logger.app_log(
-            #     title="EPICS_FAIL",
-            #     message=f"Status {response.status_code}: {response.text}"
-            # )
+            await Logger.app_log(
+                title="MARKET_DATA_FAIL",
+                message=f"Status {response.status_code}: {response.text}"
+            )
             return [] 
         memory.update_epics(epics=list(sorted(epics)), instruments=instruments)
         # return list(sorted(epics)), instruments
     except Exception as e:
-        # await Logger.app_log(title="EPICS_ERR", message=str(e))
+        await Logger.app_log(title="MARKET_DATA_ERR", message=str(e))
         return []   
             
     
@@ -187,5 +185,5 @@ async def portfolio_balance():
             data = response.json()
             return data["accounts"]
     except Exception as e:
-        # await Logger.app_log(title="PORTFOLIO_ERR", message=str(e))
+        await Logger.app_log(title="PORTFOLIO_ERR", message=str(e))
         return {}
