@@ -1,5 +1,7 @@
 import asyncio, json
 from settings import settings
+from enums.trade import TradeDirection
+from memory import memory
 
 
 async def new_auth_header() -> dict:
@@ -24,9 +26,19 @@ async def new_auth_header() -> dict:
         except Exception as e:
             await asyncio.sleep(100)
             return await new_auth_header()
+        
+async def get_epic_deal_id(self, epic: str, size: float, trade_direction: TradeDirection) -> str:
+    try:
+        open_positions = await self.get_open_positions()
+        for position in open_positions:
+            if position["epic"] == epic and float(position["size"]) == size and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
+                return position["deal_id"]
+        return None
+    except Exception as e:
+        # await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
             
     
-@staticmethod
+
 async def portfolio_balance():
     try:
         header = settings.CAPITAL_AUTH_HEADER
