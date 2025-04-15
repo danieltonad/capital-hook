@@ -2,6 +2,7 @@ import asyncio, json
 from settings import settings
 from enums.trade import TradeDirection
 from memory import memory
+from logger import Logger
 
 
 async def update_auth_header() -> None:
@@ -24,7 +25,7 @@ async def update_auth_header() -> None:
             memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
             
         except Exception as e:
-            print(e)
+            await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
             await asyncio.sleep(100)
             # return await update_auth_header()
         
@@ -37,7 +38,7 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
                 return position["deal_id"]
         return None
     except Exception as e:
-        # await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
+        await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
         pass
     
     
@@ -66,13 +67,13 @@ async def get_open_positions() -> list:
             ]
             return open_positions
         else:
-            # await Logger.app_log(
-            #     title="POSITIONS_FAIL",
-            #     message=f"Status {response.status_code}: {response.text}"
-            # )
+            await Logger.app_log(
+                title="FETCH_POSITIONS_FAIL",
+                message=f"Status {response.status_code}: {response.text}"
+            )
             return []
     except Exception as e:
-        # await Logger.app_log(title="POSITIONS_ERR", message=str(e))
+        await Logger.app_log(title="FETCH_POSITIONS_ERR", message=str(e))
         return []
         
     
@@ -82,7 +83,7 @@ async def get_open_positions_pnl(self) -> float:
         total_pnl = sum(pos["pnl"] for pos in open_positions)
         return total_pnl
     except Exception as e:
-        # await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
+        await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
         return 0.0
     
     
@@ -102,22 +103,22 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
         )
         if response.status_code == 200:
             data = response.json()
-            # reference = data["dealReference"]
-            # await Logger.app_log(
-            #     title=f"OPENED_{trade_side.value}_TRADE",
-            #     message=f"{size} size of {epic} ({reference})"
-            # )
+            reference = data["dealReference"]
+            await Logger.app_log(
+                title=f"OPENED_{trade_direction.value}_TRADE",
+                message=f"{size} size of {epic} ({reference})"
+            )
             deal_id = await get_epic_deal_id(epic, size, trade_direction)
             memory.update_deal_id(deal_id) # Update deal ID in memory
             return deal_id
         else:
-            # await Logger.app_log(
-            #     title=f"OPEN_{trade_side.value}_TRADE_ERROR",
-            #     message=f"Epic: {epic} | Status {response.status_code} => {response.text}"
-            # )
+            await Logger.app_log(
+                title=f"OPEN_{trade_direction.value}_TRADE_ERR",
+                message=f"Epic: {epic} | Status {response.status_code} => {response.text}"
+            )
             return False
     except Exception as e:
-        # await Logger.app_log(title=f"[{epic}]_OPEN_TRADE_ERR", message=str(e))
+        await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
         return False
     
    
