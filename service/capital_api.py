@@ -43,7 +43,7 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
 async def get_open_positions() -> list:
     try:
         response = await settings.session.get(
-            f"{settings.get_capital_host}/api/v1/positions",
+            f"{settings.get_capital_host()}/api/v1/positions",
             headers = memory.capital_auth_header 
         )
         if response.status_code == 200:
@@ -83,6 +83,93 @@ async def get_open_positions_pnl(self) -> float:
     except Exception as e:
         # await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
         return 0.0
+    
+    
+async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
+    try:
+        # Build payload
+        payload = {
+            "epic": epic,
+            "direction": trade_direction.value,
+            "size": str(size),  # Updated to "size" per docs
+        }
+
+        response = await settings.session.post(
+            f"{settings.get_capital_host()}/api/v1/positions",
+            headers= memory.capital_auth_header,
+            json=payload
+        )
+        if response.status_code == 200:
+            data = response.json()
+            # reference = data["dealReference"]
+            # await Logger.app_log(
+            #     title=f"OPENED_{trade_side.value}_TRADE",
+            #     message=f"{size} size of {epic} ({reference})"
+            # )
+            deal_id = await get_epic_deal_id(epic, size, trade_direction)
+            memory.update_deal_id(deal_id) # Update deal ID in memory
+            return deal_id
+        else:
+            # await Logger.app_log(
+            #     title=f"OPEN_{trade_side.value}_TRADE_ERROR",
+            #     message=f"Epic: {epic} | Status {response.status_code} => {response.text}"
+            # )
+            return False
+    except Exception as e:
+        # await Logger.app_log(title=f"[{epic}]_OPEN_TRADE_ERR", message=str(e))
+        return False
+    
+   
+   
+async def close_trade(self, epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
+    try:
+        # Use PUT to close specific position
+        response = await settings.SESSION.delete(
+            f"{settings.CAPITAL_HOST}/api/v1/positions/{deal_id}",
+            headers= await self.get_auth_header()
+        )
+        if response.status_code == 200:
+            data = response.json()
+            # await Logger.app_log(
+            #     title="CLOSE_SUCCESS",
+            #     message=f"Closed {size} of {epic}: {data}"
+            # )
+            memory.remove_deal_id(deal_id)  # Remove deal ID from settings
+            return data.get("dealReference", False)
+        
+        raise ValueError(f"Failed to close trade: {response.status_code} => {response.text}")
+    
+    except Exception as e:
+        # await Logger.app_log(title=f"[{epic}]_CLOSE_TRADE_ERR", message=str(e))
+        if retry < 3:
+            await asyncio.sleep(30)
+            return await self.close_trade(epic, size, deal_id, retry + 1)
+        return False
+        
+   
+
+async def get_all_epics() -> list:
+    try:
+        epics = set()  # Use a set to avoid duplicates
+        response = await settings.session.get(
+            f"{settings.get_capital_host()}/api/v1/markets",
+            headers=memory.capital_auth_header
+        )
+        if response.status_code == 200:
+            data = response.json()
+            markets = data.get("markets", [])
+            for market in markets:
+                epics.add(market["epic"])
+        else:
+            # await Logger.app_log(
+            #     title="EPICS_FAIL",
+            #     message=f"Status {response.status_code}: {response.text}"
+            # )
+            return [] 
+        return list(sorted(epics))
+    except Exception as e:
+        # await Logger.app_log(title="EPICS_ERR", message=str(e))
+        return []   
             
     
 
