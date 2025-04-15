@@ -21,8 +21,8 @@ async def new_auth_header() -> dict:
             CST = header.get("CST")
             X_SECURITY_TOKEN = header.get("X-SECURITY-TOKEN")
             # print(CST, X_SECURITY_TOKEN)
-        
-            return {'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST}
+            memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
+            
         except Exception as e:
             await asyncio.sleep(100)
             return await new_auth_header()
@@ -36,12 +36,13 @@ async def get_epic_deal_id(self, epic: str, size: float, trade_direction: TradeD
         return None
     except Exception as e:
         # await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
+        pass
             
     
 
 async def portfolio_balance():
     try:
-        header = settings.CAPITAL_AUTH_HEADER
+        header = memory.capital_auth_header
         response = await settings.SESSION.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=header)
         if response.status_code == 200:
             data = response.json()
