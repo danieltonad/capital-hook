@@ -10,6 +10,8 @@ class Settings:
     """
     Settings class to manage application settings.
     """
+    
+    APP_TITLE = "Capital Hook"
 
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"
     CAPITAL_HOST_DEMO: str = "https://demo-api-capital.backend-capital.com"
