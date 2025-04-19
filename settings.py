@@ -1,4 +1,5 @@
 import os
+from aiosqlite import Connection
 from httpx import AsyncClient
 from enums.trade import TradeMode
 from dotenv import load_dotenv
@@ -10,6 +11,10 @@ class Settings:
     """
     Settings class to manage application settings.
     """
+    
+    APP_TITLE = "Capital Hook"
+    DB_PATH = "database.db"
+    DB_CONNECTION: Connection = None
 
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"
     CAPITAL_HOST_DEMO: str = "https://demo-api-capital.backend-capital.com"
