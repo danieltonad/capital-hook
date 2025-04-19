@@ -12,6 +12,7 @@ class Settings:
     """
     
     APP_TITLE = "Capital Hook"
+    DB_PATH = ""
 
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"
     CAPITAL_HOST_DEMO: str = "https://demo-api-capital.backend-capital.com"
