@@ -18,6 +18,7 @@ class Settings:
 
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"
     CAPITAL_HOST_DEMO: str = "https://demo-api-capital.backend-capital.com"
+    CAPITAL_WSS_HOST: str = "wss://api-streaming-capital.backend-capital.com/connect"
     
     #
     CAPITAL_IDENTITY: str = os.getenv("CAPITAL_IDENTITY")
