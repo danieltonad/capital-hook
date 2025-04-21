@@ -2,11 +2,11 @@ import aiosqlite
 from settings import settings
 
 async def create_connection() -> aiosqlite.Connection:
-    return await aiosqlite.connect(settings.DB_PATH)
+    return aiosqlite.connect(settings.DB_PATH)
 
 # migrate database
-async def migrate_db():
-    async with settings.DB_CONNECTION.cursor() as cursor:
+async def migrate_db() -> None:
+    async with settings.DB_CONNECTION as cursor:
         # trades table
         await cursor.execute("""
             CREATE TABLE IF NOT EXISTS trades (
