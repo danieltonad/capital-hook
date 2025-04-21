@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
-from database import settings, create_connection
+from database import settings, create_connection, migrate_db
 
 app = FastAPI(
     title=settings.APP_TITLE
@@ -14,6 +14,7 @@ async def startup_event():
     Startup event handler
     """
     settings.DB_CONNECTION = await create_connection()
+    await migrate_db()
     
     
 @app.on_event("shutdown")
