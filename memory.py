@@ -6,6 +6,7 @@ class Memory:
         self.capital_auth_header: dict = {}
         epics: list = []
         instruments: dict = {}
+        market_data: dict = {}
         
         
     def update_position(self, key: str):
@@ -25,6 +26,10 @@ class Memory:
     def update_epics(self, epics: list, instruments: dict):
         self.epics = epics
         self.instruments = instruments
+        
+    def update_market_data(self, epic: str, ask: float, bid: float, timestamp: str):
+        """Update market_data with the latest stream data for an epic."""
+        self.market_data[epic] = {"ask": ask, "bid": bid, "timestamp": timestamp}
     
     
     

@@ -84,6 +84,33 @@ async def get_open_positions_pnl() -> float:
         await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
         return 0.0
     
+async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
+        """Fetch the latest ask and bid price from REST API using httpx."""
+        try:
+            url = f"{settings.get_capital_host()}/api/v1/markets/{epic}"
+            response = await settings.session.get(url, headers=memory.capital_auth_header)
+            
+            if response.status_code != 200:
+                await Logger.app_log(
+                    title="API_ERR",
+                    message=f"Failed to fetch {epic} prices: {response.status_code}"
+                )
+                return 0.0, 0.0
+            
+            data = response.json()
+            snapshot = data.get("snapshot", {})
+            ask = snapshot.get("offer", 0.0)
+            bid = snapshot.get("bid", 0.0)
+            if not ask or not bid:
+                await Logger.app_log(title="NO_DATA", message=f"No ask/bid for {epic}")
+                return 0.0, 0.0
+            
+            return float(ask), float(bid)
+        
+        except Exception as e:
+            await Logger.app_log(title="API_ERR", message=f"{epic}: {str(e)}")
+            return 0.0, 0.0
+    
     
 async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
     try:
