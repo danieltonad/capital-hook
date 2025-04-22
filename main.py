@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
 from database import settings, create_connection, migrate_db
+from service.capital_socket import CapitalSocket
 
 app = FastAPI(
     title=settings.APP_TITLE
@@ -29,6 +30,8 @@ async def shutdown_event():
     
     # close HTTP session
     await settings.session.aclose()
+    # capital socket initialization
+    settings.capital_socket_service = CapitalSocket()
 
 
 app.include_router(api, prefix="/api", tags=["API"])

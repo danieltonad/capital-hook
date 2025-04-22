@@ -29,7 +29,9 @@ class Settings:
     
     TRADINGVIEW_IP_ADDRESS : list = ["52.89.214.238", "34.212.75.30", "54.218.53.128", "52.32.178.7"]
     
-    session: AsyncClient = AsyncClient()
+    session: AsyncClient = AsyncClient() # HTTP session initialization
+    
+    capital_socket_service = None # capital socket initialization
     
     def __init__(self):
         self.TRADE_MODE = TradeMode.DEMO
