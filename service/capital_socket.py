@@ -1,7 +1,7 @@
 import websockets, asyncio, json
 from memory import memory
 from logger import Logger
-from uuid import uuid4
+from .capital_api import get_last_api_ask_bid
 
 
 class CapitalSocket:
@@ -18,7 +18,7 @@ class CapitalSocket:
             await Logger.app_log(title="WS_CONNECT", message="WebSocket connected")
             
     async def ping_socket(self):
-        """Ping the service every 5 minutes to keep connection alive."""
+        """Ping socket service to keep connection alive."""
         try:
             ping_msg = {
                 "destination": "ping",
@@ -26,7 +26,10 @@ class CapitalSocket:
                 "cst": memory.capital_auth_header["CST"],
                 "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"]
             }
-            print("WS_PINGED_SUCCESS")
+            
+            if self.running:
+                await self.websocket.send(json.dumps(ping_msg))
+            
         except Exception as e:
             await Logger.app_log(title="PING_ERR", message=f"Ping failed: {str(e)}")
             self.running = False
@@ -43,14 +46,14 @@ class CapitalSocket:
             subscribe_msg = {
                 "destination": "marketData.subscribe",
                 "correlationId": f"epic_sub_{epic}",
-                "cst": self.CAPITAL_AUTH_HEADER["CST"],
-                "securityToken": self.CAPITAL_AUTH_HEADER["X-SECURITY-TOKEN"],
+                "cst": memory.capital_auth_header["CST"],
+                "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"],
                 "payload": {"epics": [epic]}
             }
             await self.websocket.send(json.dumps(subscribe_msg))
             # updated lastest ask - bid data
-            ask, bid = await settings.CAPITAL_SERVICE.get_latest_api_ask_bid(epic)
-            self.MARKET_DATA[epic] = {"ask": ask, "bid": bid, "timestamp": 0}
+            ask, bid = await get_last_api_ask_bid(epic)
+            memory.update_market_data(epic=epic, ask=ask, bid=bid, timestamp=0)
             self.subscribed_epics.add(epic)
             await Logger.app_log(title="SUBSCRIBE_SENT", message=f"Subscribed to {epic}")
         except Exception as e:
@@ -70,8 +73,8 @@ class CapitalSocket:
             unsubscribe_msg = {
                 "destination": "marketData.unsubscribe",
                 "correlationId": f"epic_sub_{epic}",
-                "cst": self.CAPITAL_AUTH_HEADER["CST"],
-                "securityToken": self.CAPITAL_AUTH_HEADER["X-SECURITY-TOKEN"],
+                "cst": memory.capital_auth_header["CST"],
+                "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"],
                 "payload": {"epics": [epic]}
             }
             await self.websocket.send(json.dumps(unsubscribe_msg))
@@ -99,7 +102,7 @@ class CapitalSocket:
                     )
                 elif data["destination"] == "quote":
                     payload = data["payload"]
-                    await self.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
+                    await memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
                 else:
                     await asyncio.sleep(5)
                 
@@ -116,8 +119,5 @@ class CapitalSocket:
             for epic in epics:
                 await self.subscribe_to_epic(epic)
 
-    async def update_market_data(self, epic: str, ask: float, bid: float, timestamp: str):
-        """Update MARKET_DATA with the latest stream data for an epic."""
-        self.MARKET_DATA[epic] = {"ask": ask, "bid": bid, "timestamp": timestamp}
 
 
