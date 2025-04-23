@@ -4,6 +4,8 @@ from routes.api import api
 from routes.webhook import webhook
 from database import settings, create_connection, migrate_db
 from service.capital_socket import CapitalSocket
+from memory import memory
+from service.capital_api import get_account_preferences, update_markets,update_auth_header
 
 app = FastAPI(
     title=settings.APP_TITLE
@@ -14,8 +16,17 @@ async def startup_event():
     """
     Startup event handler
     """
-    settings.DB_CONNECTION = await create_connection()
-    await migrate_db()
+    settings.DB_CONNECTION = await create_connection() # create DB connection
+    await migrate_db() # migrate DB
+    
+    
+    # update market data
+    await update_auth_header()
+    await update_markets()
+    print("Market data updated", len(memory.epics))
+    # prefetch perference data
+    pef = await get_account_preferences()
+    print(pef)
     
     
 @app.on_event("shutdown")

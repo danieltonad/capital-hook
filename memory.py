@@ -1,14 +1,22 @@
 
 class Memory:
+    positions: dict = {}
+    deal_ids: set = set()
+    capital_auth_header: dict = {}
+    epics: list = []
+    instruments: dict = {}
+    market_data: dict = {}
+    preferences: dict = {}
+    
     def __init__(self):
-        self.positions: dict = {}
-        self.deal_ids: set = set()
-        self.capital_auth_header: dict = {}
-        epics: list = []
-        instruments: dict = {}
-        market_data: dict = {}
-        preferences: dict = {}
-        
+        pass
+        # self.positions = {}
+        # self.deal_ids = set()
+        # self.capital_auth_header = {}
+        # self.epics = []
+        # self.instruments = {}
+        # self.market_data = {}
+        # self.preferences = {}
         
         
     def update_position(self, key: str):
@@ -43,8 +51,8 @@ class Memory:
     def get_leverage(self, epic: str) -> int:
         """Get the leverage for a given epic."""
         instrument = self.instruments.get(epic, None)
-        if instrument:
-            return instrument.get("leverage", 1)
+        # if instrument:
+        #     return self.
     
     
     
