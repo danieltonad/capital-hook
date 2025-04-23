@@ -7,6 +7,8 @@ class Memory:
         epics: list = []
         instruments: dict = {}
         market_data: dict = {}
+        preferences: dict = {}
+        
         
         
     def update_position(self, key: str):
@@ -30,6 +32,19 @@ class Memory:
     def update_market_data(self, epic: str, ask: float, bid: float, timestamp: str):
         """Update market_data with the latest stream data for an epic."""
         self.market_data[epic] = {"ask": ask, "bid": bid, "timestamp": timestamp}
+        
+    def get_current_price(self, epic: str) -> tuple[float, float]:
+        """Get the latest ask and bid price for a given epic."""
+        if epic in self.market_data:
+            return self.market_data[epic]["ask"], self.market_data[epic]["bid"]
+        else:
+            return None, None
+    
+    def get_leverage(self, epic: str) -> int:
+        """Get the leverage for a given epic."""
+        instrument = self.instruments.get(epic, None)
+        if instrument:
+            return instrument.get("leverage", 1)
     
     
     

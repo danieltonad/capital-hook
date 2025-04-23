@@ -55,14 +55,14 @@ async def migrate_db() -> None:
         
         
         
-async def saved_trade_history(trade_id: str, epic: str, leverage: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str, mode: TradeMode) -> None:
+async def insert_trade_history(trade_id: str, epic: str, leverage: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str) -> None:
     async with settings.DB_CONNECTION as cursor:
         await cursor.execute(
             """
             INSERT INTO trades (id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                trade_id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode.value
+                trade_id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, settings.TRADE_MODE.value
             ))
         await settings.DB_CONNECTION.commit()
         
