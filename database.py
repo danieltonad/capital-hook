@@ -1,5 +1,6 @@
 import aiosqlite
 from settings import settings
+from enums.trade import TradeMode
 
 async def create_connection() -> aiosqlite.Connection:
     return aiosqlite.connect(settings.DB_PATH)
@@ -22,7 +23,8 @@ async def migrate_db() -> None:
                 entry_price REAL NOT NULL,
                 exit_price REAL NOT NULL,
                 opened_at TEXT NOT NULL,
-                closed_at TEXT NOT NULL
+                closed_at TEXT NOT NULL,
+                mode TEXT NOT NULL,
             )
         """)
         
@@ -53,14 +55,14 @@ async def migrate_db() -> None:
         
         
         
-async def saved_trade_history(trade_id: str, epic: str, leverage: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str) -> None:
+async def saved_trade_history(trade_id: str, epic: str, leverage: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str, mode: TradeMode) -> None:
     async with settings.DB_CONNECTION as cursor:
         await cursor.execute(
             """
-            INSERT INTO trades (id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            INSERT INTO trades (id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
-                trade_id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at
+                trade_id, epic, leverage, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode.value
             ))
         await settings.DB_CONNECTION.commit()
         
