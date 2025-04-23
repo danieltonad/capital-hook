@@ -50,7 +50,8 @@ class Memory:
     
     def get_leverage(self, epic: str) -> int:
         """Get the leverage for a given epic."""
-        instrument = self.instruments.get(epic, None)
+        instrument = self.instruments.get(epic, "")
+        return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
         # if instrument:
         #     return self.
     
@@ -58,3 +59,7 @@ class Memory:
     
 
 memory = Memory()
+
+
+
+# {'hedgingMode': True, 'leverages': {'SHARES': {'current': 20, 'available': [1, 2, 3, 4, 5, 10, 20]}, 'CURRENCIES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 30, 50, 100, 200]}, 'INDICES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 50, 100, 200]}, 'CRYPTOCURRENCIES': {'current': 20, 'available': [1, 2, 3, 4, 5, 10, 20]}, 'COMMODITIES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 50, 100, 200]}}}
