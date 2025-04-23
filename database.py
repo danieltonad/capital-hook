@@ -11,7 +11,7 @@ async def migrate_db() -> None:
         # trades table
         await cursor.execute("""
             CREATE TABLE IF NOT EXISTS trades (
-                id TEXT PRIMARY KEY ,
+                id TEXT PRIMARY KEY,
                 epic TEXT NOT NULL,
                 leverage TEXT NOT NULL,
                 size REAL NOT NULL,
@@ -24,7 +24,7 @@ async def migrate_db() -> None:
                 exit_price REAL NOT NULL,
                 opened_at TEXT NOT NULL,
                 closed_at TEXT NOT NULL,
-                mode TEXT NOT NULL,
+                mode TEXT NOT NULL
             )
         """)
         
@@ -46,7 +46,7 @@ async def migrate_db() -> None:
             CREATE TABLE IF NOT EXISTS bot_config (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 trade_mode TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
