@@ -25,8 +25,9 @@ async def startup_event():
     await update_markets()
     print("Market data updated", len(memory.epics))
     # prefetch perference data
-    pef = await get_account_preferences()
-    print(pef)
+    preferences = await get_account_preferences()
+    memory.preferences = preferences
+    print(memory.get_leverage("VIX"))
     
     
 @app.on_event("shutdown")
