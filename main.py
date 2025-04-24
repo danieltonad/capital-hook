@@ -2,7 +2,10 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
-from database import settings, create_connection
+from database import settings, create_connection, migrate_db
+from service.capital_socket import CapitalSocket
+from memory import memory
+from service.capital_api import get_account_preferences, update_markets,update_auth_header
 
 app = FastAPI(
     title=settings.APP_TITLE
@@ -13,7 +16,18 @@ async def startup_event():
     """
     Startup event handler
     """
-    settings.DB_CONNECTION = await create_connection()
+    settings.DB_CONNECTION = await create_connection() # create DB connection
+    await migrate_db() # migrate DB
+    
+    
+    # update market data
+    await update_auth_header()
+    await update_markets()
+    print("Market data updated", len(memory.epics))
+    # prefetch perference data
+    preferences = await get_account_preferences()
+    memory.preferences = preferences
+    print(memory.get_leverage("VIX"))
     
     
 @app.on_event("shutdown")
@@ -28,6 +42,8 @@ async def shutdown_event():
     
     # close HTTP session
     await settings.session.aclose()
+    # capital socket initialization
+    settings.capital_socket_service = CapitalSocket()
 
 
 app.include_router(api, prefix="/api", tags=["API"])
