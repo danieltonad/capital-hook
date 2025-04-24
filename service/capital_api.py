@@ -6,28 +6,28 @@ from logger import Logger
 
 
 async def update_auth_header() -> None:
-        try:
-            payload = json.dumps({
-            "identifier": settings.CAPITAL_IDENTITY,
-            "password": settings.CAPITAL_PASSWORD,
-            "encryptedPassword": False
-            })
-            headers = {
-                'X-CAP-API-KEY': settings.CAPITAL_API_KEY,
-                'Content-Type': 'application/json'
-            }
-            response = await settings.session.post(f"{settings.get_capital_host()}/api/v1/session", headers=headers, data=payload)
-            # print(response.status_code ,response.json())
-            header: dict = response.headers
-            CST = header.get("CST")
-            X_SECURITY_TOKEN = header.get("X-SECURITY-TOKEN")
-            # print(CST, X_SECURITY_TOKEN)
-            memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
-            
-        except Exception as e:
-            await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
-            await asyncio.sleep(100)
-            return await update_auth_header()
+    try:
+        payload = json.dumps({
+        "identifier": settings.CAPITAL_IDENTITY,
+        "password": settings.CAPITAL_PASSWORD,
+        "encryptedPassword": False
+        })
+        headers = {
+            'X-CAP-API-KEY': settings.CAPITAL_API_KEY,
+            'Content-Type': 'application/json'
+        }
+        response = await settings.session.post(f"{settings.get_capital_host()}/api/v1/session", headers=headers, data=payload)
+        # print(response.status_code ,response.json())
+        header: dict = response.headers
+        CST = header.get("CST")
+        X_SECURITY_TOKEN = header.get("X-SECURITY-TOKEN")
+        # print(CST, X_SECURITY_TOKEN)
+        memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
+        
+    except Exception as e:
+        await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
+        await asyncio.sleep(100)
+        return await update_auth_header()
         
         
 async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection) -> str:
@@ -83,6 +83,34 @@ async def get_open_positions_pnl() -> float:
     except Exception as e:
         await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
         return 0.0
+    
+    
+async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
+        """Fetch the latest ask and bid price from REST API using httpx."""
+        try:
+            url = f"{settings.get_capital_host()}/api/v1/markets/{epic}"
+            response = await settings.session.get(url, headers=memory.capital_auth_header)
+            
+            if response.status_code != 200:
+                await Logger.app_log(
+                    title="API_ERR",
+                    message=f"Failed to fetch {epic} prices: {response.status_code}"
+                )
+                return 0.0, 0.0
+            
+            data = response.json()
+            snapshot = data.get("snapshot", {})
+            ask = snapshot.get("offer", 0.0)
+            bid = snapshot.get("bid", 0.0)
+            if not ask or not bid:
+                await Logger.app_log(title="NO_DATA", message=f"No ask/bid for {epic}")
+                return 0.0, 0.0
+            
+            return float(ask), float(bid)
+        
+        except Exception as e:
+            await Logger.app_log(title="API_ERR", message=f"{epic}: {str(e)}")
+            return 0.0, 0.0
     
     
 async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
@@ -159,7 +187,6 @@ async def update_markets() -> None:
         if response.status_code == 200:
             data = response.json()
             markets = data.get("markets", [])
-            
             for market in markets:
                 epics.add(market["epic"])
                 instruments[market["epic"]] = market["instrumentType"]
@@ -168,12 +195,75 @@ async def update_markets() -> None:
                 title="MARKET_DATA_FAIL",
                 message=f"Status {response.status_code}: {response.text}"
             )
-            return [] 
+            return []
         memory.update_epics(epics=list(sorted(epics)), instruments=instruments)
         # return list(sorted(epics)), instruments
     except Exception as e:
         await Logger.app_log(title="MARKET_DATA_ERR", message=str(e))
-        return []   
+        return []  
+    
+    
+    
+    
+async def get_account_preferences() -> dict:
+    try:
+        response = await settings.session.get(
+            f"{settings.get_capital_host()}/api/v1/accounts/preferences",
+            headers=memory.capital_auth_header
+        )
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            await Logger.app_log(
+                title="PREF_FETCH_FAIL",
+                message=f"Status {response.status_code}: {response.text}"
+            )
+            return {}
+    except Exception as e:
+        await Logger.app_log(title="PREF_GET_ERR", message=str(e))
+        return {}
+        
+        
+        
+async def set_account_preferences(leverages: dict = None, hedging_mode: bool = None) -> bool:
+    try:
+        # Get current preferences first to modify only what’s provided
+        current_prefs = await get_account_preferences()
+        if not current_prefs:
+            await Logger.app_log(
+                title="PREF_SET_FAIL",
+                message="Couldn’t fetch current preferences"
+            )
+            return False
+
+        # Build payload with current values as fallback
+        payload = {
+            "leverages": leverages if leverages is not None else current_prefs.get("leverages", {}),
+            "hedgingMode": hedging_mode if hedging_mode is not None else current_prefs.get("hedgingMode", False)
+        }
+    
+        response = await settings.session.put(
+            f"{settings.get_capital_host()}/api/v1/accounts/preferences",
+            headers= memory.capital_auth_header,
+            json=payload
+        )
+        if response.status_code == 200:
+            await Logger.app_log(
+                title="PREF_SET_SUCCESS",
+                message=f"Updated preferences: {payload}"
+            )
+            return True
+        else:
+            await Logger.app_log(
+                title="PREF_SET_FAIL",
+                message=f"Status {response.status_code}: {response.text}"
+            )
+            return False
+    except Exception as e:
+        await Logger.app_log(title="PREF_SET_ERR", message=str(e))
+        return False    
+     
             
     
 

@@ -1,11 +1,22 @@
 
 class Memory:
+    positions: dict = {}
+    deal_ids: set = set()
+    capital_auth_header: dict = {}
+    epics: list = []
+    instruments: dict = {}
+    market_data: dict = {}
+    preferences: dict = {}
+    
     def __init__(self):
-        self.positions: dict = {}
-        self.deal_ids: set = set()
-        self.capital_auth_header: dict = {}
-        epics: list = []
-        instruments: dict = {}
+        pass
+        # self.positions = {}
+        # self.deal_ids = set()
+        # self.capital_auth_header = {}
+        # self.epics = []
+        # self.instruments = {}
+        # self.market_data = {}
+        # self.preferences = {}
         
         
     def update_position(self, key: str):
@@ -25,8 +36,30 @@ class Memory:
     def update_epics(self, epics: list, instruments: dict):
         self.epics = epics
         self.instruments = instruments
+        
+    def update_market_data(self, epic: str, ask: float, bid: float, timestamp: str):
+        """Update market_data with the latest stream data for an epic."""
+        self.market_data[epic] = {"ask": ask, "bid": bid, "timestamp": timestamp}
+        
+    def get_current_price(self, epic: str) -> tuple[float, float]:
+        """Get the latest ask and bid price for a given epic."""
+        if epic in self.market_data:
+            return self.market_data[epic]["ask"], self.market_data[epic]["bid"]
+        else:
+            return None, None
+    
+    def get_leverage(self, epic: str) -> int:
+        """Get the leverage for a given epic."""
+        instrument = self.instruments.get(epic, "")
+        return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
+        # if instrument:
+        #     return self.
     
     
     
 
 memory = Memory()
+
+
+
+# {'hedgingMode': True, 'leverages': {'SHARES': {'current': 20, 'available': [1, 2, 3, 4, 5, 10, 20]}, 'CURRENCIES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 30, 50, 100, 200]}, 'INDICES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 50, 100, 200]}, 'CRYPTOCURRENCIES': {'current': 20, 'available': [1, 2, 3, 4, 5, 10, 20]}, 'COMMODITIES': {'current': 200, 'available': [1, 2, 3, 4, 5, 10, 20, 50, 100, 200]}}}
