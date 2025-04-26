@@ -4,6 +4,7 @@ from enum import Enum
 class TradeDirection(Enum):
     SELL = "SELL"
     BUY = "BUY"
+    NEUTRAL = "NEUTRAL"
     
     
 class ExitType(Enum):
