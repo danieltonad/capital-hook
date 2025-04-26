@@ -62,8 +62,8 @@ class Memory:
     def update_trading_view_hooked_trades(self, epic: str, direction: TradeDirection, hook_name: str):
         self.hooked_trades[f"{epic}_{hook_name}"] = direction
     
-    def get_trading_view_hooked_trade_side(self, symbol: str, hook_name) -> TradeDirection:
-        return self.hooked_trades.get(f"{symbol}_{hook_name}", TradeDirection.NEUTRAL)
+    def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:
+        return self.hooked_trades.get(f"{epic}_{hook_name}", TradeDirection.NEUTRAL)
         
         
     
