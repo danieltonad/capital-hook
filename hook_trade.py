@@ -5,6 +5,7 @@ from service.capital_api import open_trade, close_trade
 from memory import memory
 from datetime import datetime
 from database import insert_trade_history
+from enums.trade import TradeInstrument
 
 class HookedTradeExecution:
     trade_direction: TradeDirection
@@ -15,7 +16,7 @@ class HookedTradeExecution:
     loss: int
     deal_id: str
     leverage: int
-    
+    trade_instrument: TradeInstrument
     
     def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str):
         self.trade_direction = trade_direction
@@ -26,6 +27,7 @@ class HookedTradeExecution:
         self.loss = loss
         self.deal_id = None
         self.leverage = memory.get_leverage(epic)
+        self.trade_instrument = memory.get_trade_instrument(epic)
         
     
     def __log_trade_position(self, profit_loss, percentage):
@@ -41,7 +43,10 @@ class HookedTradeExecution:
         self.capital_size = float(self.trade_amount)
         leverage_size = self.capital_size * self.leverage
         self.trade_size = float(leverage_size / self.entry_price)
-        self.trade_size = float(f"{self.trade_size:.2g}") if self.trade_size < 1 else float(f"{self.trade_size:.2f}")
+        if self.trade_instrument == TradeInstrument.CURRENCIES:
+            self.trade_size = round(self.trade_size, -2)
+        else:
+            self.trade_size = float(f"{self.trade_size:.2g}") if self.trade_size < 1 else float(f"{self.trade_size:.2f}")
         return leverage_size
             
     async def __risk_reward_setup(self):
