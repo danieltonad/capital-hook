@@ -11,8 +11,14 @@ class ExitType(Enum):
     SL = "SL"
     USER = "USER"
     
-    
 class TradeMode(Enum):
     DEMO = "DEMO"
     LIVE = "LIVE"
 
+class TradeInstrument(Enum):
+    CRYPTOCURRENCIES = "CRYPTOCURRENCIES"
+    SHARES = "SHARES"
+    INDICES = "INDICES"
+    CURRENCIES = "CURRENCIES"
+    COMMODITIES = "COMMODITIES"
+    UNKONWN = ""

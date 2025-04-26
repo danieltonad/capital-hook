@@ -1,4 +1,4 @@
-
+from enums.trade import TradeInstrument
 class Memory:
     positions: dict = {}
     deal_ids: set = set()
@@ -52,8 +52,12 @@ class Memory:
         """Get the leverage for a given epic."""
         instrument = self.instruments.get(epic, "")
         return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
-        # if instrument:
-        #     return self.
+    
+    def get_trade_instrument(self, epic: str) -> TradeInstrument:
+        """Get the trade instrument for a given epic."""
+        return TradeInstrument(self.instruments.get(epic, ""))
+        
+        
     
     
     
