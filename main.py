@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
+from routes.view import view
 from database import settings, create_connection, migrate_db
 from service.capital_socket import CapitalSocket
 from memory import memory
@@ -27,7 +28,7 @@ async def startup_event():
     # prefetch perference data
     preferences = await get_account_preferences()
     memory.preferences = preferences
-    print(memory.get_leverage("VIX"))
+    # print(memory.get_leverage("VIX"))
     
     
 @app.on_event("shutdown")
@@ -46,6 +47,7 @@ async def shutdown_event():
     settings.capital_socket_service = CapitalSocket()
 
 
+app.include_router(view, tags=["View"])
 app.include_router(api, prefix="/api", tags=["API"])
 app.include_router(webhook, prefix="/webhook", tags=["Webhook"])
 
