@@ -7,7 +7,7 @@ from logger import Logger
 
 webhook = APIRouter()
 
-@webhook.post("/trading-view", tags=["TradingView Webhook Endpoint"])
+@webhook.post("/trading-view")
 async def tradingview_webhook_route(data: TradingViewWebhookModel, request: Request, background_task: BackgroundTasks):
     
     # validate whilested Tradingview IP Address
