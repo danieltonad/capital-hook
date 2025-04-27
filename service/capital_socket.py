@@ -6,7 +6,10 @@ from .capital_api import get_last_api_ask_bid
 
 class CapitalSocket:
     def __init__(self):
-        pass
+        self.websocket = None
+        self.running = False
+        self.subscribed_epics = set()
+
     
     async def connect_websocket(self):
         """Connect to Capital.com WebSocket if not already connected."""
@@ -121,3 +124,4 @@ class CapitalSocket:
 
 
 
+capital_socket = CapitalSocket()

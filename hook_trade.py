@@ -2,10 +2,10 @@ import asyncio
 from enums.trade import TradeDirection, ExitType
 from logger import Logger
 from service.capital_api import open_trade, close_trade
-from memory import memory
 from datetime import datetime
 from database import insert_trade_history
 from enums.trade import TradeInstrument
+from service.capital_socket import capital_socket, memory
 
 class HookedTradeExecution:
     trade_direction: TradeDirection
@@ -31,10 +31,10 @@ class HookedTradeExecution:
         
     
     def __log_trade_position(self, profit_loss, percentage):
-        print(f"[{self.symbol}] [{self.trade_direction.value}] PnL: {profit_loss:.2f} -", f"{percentage:.2f}%   [{self.hook_name.upper()}]")
+        print(f"[{self.epic}] [{self.trade_direction.value}] PnL: {profit_loss:.2f} -", f"{percentage:.2f}%   [{self.hook_name.upper()}]")
         
     async def log_trade(self, status: str) -> None:
-        await Logger.app_log(title="TRADE_LOG", message=f"{self.symbol} {status} {self.trade_direction.value} trade -> {self.trade_size}  [{self.hook_name.upper()}]")
+        await Logger.app_log(title="TRADE_LOG", message=f"{self.epic} {status} {self.trade_direction.value} trade -> {self.trade_size}  [{self.hook_name.upper()}]")
         
     async def sleep_time(self) -> None:
         await asyncio.sleep(1.12)
@@ -116,8 +116,8 @@ class HookedTradeExecution:
             return True, profit_loss, percentage
             
         
-        # elif settings.get_trading_view_hooked_trade_direction(self.symbol) != self.trade_direction:
-        #     await settings.CAPITAL_SERVICE.close_trade(epic=self.symbol, size=self.trade_size, deal_id=self.deal_id)
+        # elif settings.get_trading_view_hooked_trade_direction(self.epic) != self.trade_direction:
+        #     await settings.CAPITAL_SERVICE.close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
         #     self.exit_type = ExitType.STRATEGY
         #     await self.log_trade("closed")
         #     return True, profit_loss, percentage
@@ -129,10 +129,10 @@ class HookedTradeExecution:
 
     async def execute_trade(self):
         try:
-            # await settings.subscribe_to_epic(self.symbol)
+            await capital_socket.subscribe_to_epic(self.epic)
             
             # long trade
-            if  self.trade_side == TradeDirection.BUY:
+            if  self.trade_direction == TradeDirection.BUY:
                 # set risk reward
                 await self.__risk_reward_setup()
                 
