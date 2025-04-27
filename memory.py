@@ -21,8 +21,17 @@ class Memory:
         # self.preferences = {}
         
         
-    def update_position(self, key: str):
-        pass
+    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float):
+        self.positions[deal_id] = {
+            "epic": epic,
+            "pnl": pnl,
+            "trade_direction": trade_direction,
+            "trade_size": trade_size
+        }
+        
+    def remove_position(self, deal_id: str):
+        if deal_id in self.positions:
+            del self.positions[deal_id]
     
     
     def update_deal_id(self, deal_id: str):
