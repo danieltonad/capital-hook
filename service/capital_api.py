@@ -197,10 +197,9 @@ async def update_markets() -> None:
             )
             return []
         memory.update_epics(epics=list(sorted(epics)), instruments=instruments)
-        # return list(sorted(epics)), instruments
+        
     except Exception as e:
-        await Logger.app_log(title="MARKET_DATA_ERR", message=str(e))
-        return []  
+        await Logger.app_log(title="MARKET_DATA_ERR", message=str(e))  
     
     
     
