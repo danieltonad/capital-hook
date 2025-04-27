@@ -1,4 +1,5 @@
-
+from enums.trade import TradeDirection, TradeInstrument
+from typing import Dict
 class Memory:
     positions: dict = {}
     deal_ids: set = set()
@@ -7,6 +8,7 @@ class Memory:
     instruments: dict = {}
     market_data: dict = {}
     preferences: dict = {}
+    hooked_trades: Dict[str, TradeDirection] = {}
     
     def __init__(self):
         pass
@@ -19,8 +21,17 @@ class Memory:
         # self.preferences = {}
         
         
-    def update_position(self, key: str):
-        pass
+    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float):
+        self.positions[deal_id] = {
+            "epic": epic,
+            "pnl": pnl,
+            "trade_direction": trade_direction,
+            "trade_size": trade_size
+        }
+        
+    def remove_position(self, deal_id: str):
+        if deal_id in self.positions:
+            del self.positions[deal_id]
     
     
     def update_deal_id(self, deal_id: str):
@@ -52,8 +63,18 @@ class Memory:
         """Get the leverage for a given epic."""
         instrument = self.instruments.get(epic, "")
         return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
-        # if instrument:
-        #     return self.
+    
+    def get_trade_instrument(self, epic: str) -> TradeInstrument:
+        """Get the trade instrument for a given epic."""
+        return TradeInstrument(self.instruments.get(epic, ""))
+    
+    def update_trading_view_hooked_trades(self, epic: str, direction: TradeDirection, hook_name: str):
+        self.hooked_trades[f"{epic}_{hook_name}"] = direction
+    
+    def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:
+        return self.hooked_trades.get(f"{epic}_{hook_name}", TradeDirection.NEUTRAL)
+        
+        
     
     
     
