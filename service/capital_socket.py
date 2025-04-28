@@ -59,6 +59,7 @@ class CapitalSocket:
             memory.update_market_data(epic=epic, ask=ask, bid=bid, timestamp=0)
             self.subscribed_epics.add(epic)
             await Logger.app_log(title="SUBSCRIBE_SENT", message=f"Subscribed to {epic}")
+            
         except Exception as e:
             await Logger.app_log(title="SUBSCRIBE_ERR", message=f"{epic}: {str(e)}")
 
