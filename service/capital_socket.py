@@ -106,7 +106,7 @@ class CapitalSocket:
                     )
                 elif data["destination"] == "quote":
                     payload = data["payload"]
-                    await memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
+                    memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
                 else:
                     await asyncio.sleep(5)
                 
