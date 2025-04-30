@@ -7,6 +7,7 @@ from database import settings, create_connection, migrate_db
 from service.capital_socket import CapitalSocket
 from memory import memory
 from service.capital_api import get_account_preferences, update_markets,update_auth_header
+from job import jobs
 
 app = FastAPI(
     title=settings.APP_TITLE
@@ -28,7 +29,9 @@ async def startup_event():
     # prefetch perference data
     preferences = await get_account_preferences()
     memory.preferences = preferences
-    # print(memory.get_leverage("VIX"))
+    
+    # initialize jobs
+    await jobs.run()
     
     
 @app.on_event("shutdown")
