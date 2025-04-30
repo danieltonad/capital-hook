@@ -25,7 +25,8 @@ async def startup_event():
     # update market data
     await update_auth_header()
     await update_markets()
-    print("Market data updated", len(memory.epics))
+    print(f"{len(memory.epics):,} market data updated")
+    
     # prefetch perference data
     preferences = await get_account_preferences()
     memory.preferences = preferences

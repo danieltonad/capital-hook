@@ -17,8 +17,8 @@ class CapitalSocket:
             uri = "wss://api-streaming-capital.backend-capital.com/connect"
             self.websocket = await websockets.connect(uri)
             self.running = True
-            asyncio.create_task(self._listen())  # Start listening in background
             await Logger.app_log(title="WS_CONNECT", message="WebSocket connected")
+            asyncio.create_task(self._listen())  # Start listening in background
             
     async def ping_socket(self):
         """Ping socket service to keep connection alive."""
