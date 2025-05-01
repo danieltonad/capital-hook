@@ -88,6 +88,7 @@ class HookedTradeExecution:
         current_price = bid if self.trade_direction == TradeDirection.BUY else ask
         profit_loss, percentage = self.__calculate_profit_loss(current_price)
         self.exit_price = ask if self.trade_direction == TradeDirection.BUY else bid
+        memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, hook_name=self.hook_name)
         
         # risk reward monitor long
         if current_price >= self.target_profit_price and self.trade_direction == TradeDirection.BUY:
@@ -182,6 +183,8 @@ class HookedTradeExecution:
             else:
                 raise ValueError("Invalid trade direction")
             
+            # remove position from memory
+            memory.remove_position(self.deal_id)
             
         except Exception as err:
             await Logger.app_log(title=f"{self.hook_name.upper()}_ERR_[{self.epic}]", message=str(err))
