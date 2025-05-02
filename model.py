@@ -10,3 +10,16 @@ class TradingViewWebhookModel(BaseModel):
     hook_name: str
     profit: Annotated[int, conint(ge=1)] 
     loss: Annotated[int, conint(ge=1)] 
+    
+    
+class LeverageModel(BaseModel):
+    CRYPTOCURRENCIES: int 
+    SHARES: int
+    INDICES: int
+    CURRENCIES: int
+    COMMODITIES: int
+
+class AccountPreferenceModel(BaseModel):
+    hedging_mode: bool
+    leverages: LeverageModel
+    
