@@ -73,16 +73,6 @@ async def get_open_positions() -> list:
     except Exception as e:
         await Logger.app_log(title="FETCH_POSITIONS_ERR", message=str(e))
         return []
-        
-    
-async def get_open_positions_pnl() -> float:
-    try:
-        open_positions = await get_open_positions()
-        total_pnl = sum(pos["pnl"] for pos in open_positions)
-        return total_pnl
-    except Exception as e:
-        await Logger.app_log(title="POSITIONS_PNL_ERR", message=str(e))
-        return 0.0
     
     
 async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:

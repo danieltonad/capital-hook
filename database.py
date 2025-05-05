@@ -67,7 +67,7 @@ async def insert_trade_history(trade_id: str, epic: str, leverage: str, size: fl
         await settings.DB_CONNECTION.commit()
         
         
-async def saved_failed_hooks(hook_id: str, epic: str, hook_name: str, direction: str, error_message: str, created_at: str) -> None:
+async def save_failed_hooks(hook_id: str, epic: str, hook_name: str, direction: str, error_message: str, created_at: str) -> None:
     async with settings.DB_CONNECTION as cursor:
         await cursor.execute(
             """
