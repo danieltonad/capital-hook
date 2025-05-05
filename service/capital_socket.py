@@ -17,8 +17,8 @@ class CapitalSocket:
             uri = "wss://api-streaming-capital.backend-capital.com/connect"
             self.websocket = await websockets.connect(uri)
             self.running = True
-            asyncio.create_task(self._listen())  # Start listening in background
             await Logger.app_log(title="WS_CONNECT", message="WebSocket connected")
+            asyncio.create_task(self._listen())  # Start listening in background
             
     async def ping_socket(self):
         """Ping socket service to keep connection alive."""
@@ -59,6 +59,7 @@ class CapitalSocket:
             memory.update_market_data(epic=epic, ask=ask, bid=bid, timestamp=0)
             self.subscribed_epics.add(epic)
             await Logger.app_log(title="SUBSCRIBE_SENT", message=f"Subscribed to {epic}")
+            
         except Exception as e:
             await Logger.app_log(title="SUBSCRIBE_ERR", message=f"{epic}: {str(e)}")
 
@@ -105,7 +106,7 @@ class CapitalSocket:
                     )
                 elif data["destination"] == "quote":
                     payload = data["payload"]
-                    await memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
+                    memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
                 else:
                     await asyncio.sleep(5)
                 
