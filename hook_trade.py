@@ -119,7 +119,7 @@ class HookedTradeExecution:
         
         elif memory.manual_trade_exit_signal(self.deal_id):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
-            self.exit_type = ExitType.STRATEGY
+            self.exit_type = ExitType.USER
             await self.log_trade("closed")
             return True, profit_loss, percentage
         
