@@ -117,11 +117,11 @@ class HookedTradeExecution:
             return True, profit_loss, percentage
             
         
-        # elif settings.get_trading_view_hooked_trade_direction(self.epic) != self.trade_direction:
-        #     await settings.CAPITAL_SERVICE.close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
-        #     self.exit_type = ExitType.STRATEGY
-        #     await self.log_trade("closed")
-        #     return True, profit_loss, percentage
+        elif memory.manual_trade_exit_signal(self.deal_id):
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            self.exit_type = ExitType.STRATEGY
+            await self.log_trade("closed")
+            return True, profit_loss, percentage
         
         else:
             return False, profit_loss, percentage
