@@ -22,14 +22,31 @@ class Memory:
         
         
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str):
-        self.positions[deal_id] = {
-            "epic": epic,
-            "pnl": pnl,
-            "trade_direction": trade_direction,
-            "trade_size": trade_size,
-            "hook_name": hook_name
-            
-        }
+        if self.positions.get(deal_id):
+            self.positions[deal_id]["pnl"] = pnl
+            self.positions[deal_id]["trade_direction"] = trade_direction
+            self.positions[deal_id]["epic"] = epic
+            self.positions[deal_id]["trade_size"] = trade_size
+            self.positions[deal_id]["hook_name"] = hook_name
+            pass
+        else:
+            self.positions[deal_id] = {
+                "epic": epic,
+                "pnl": pnl,
+                "trade_direction": trade_direction,
+                "trade_size": trade_size,
+                "hook_name": hook_name,
+                "exit_trade": False,
+            }
+        
+    def manual_close_position(self, deal_id: str):
+        if deal_id in self.positions:
+            self.positions[deal_id]["exit_trade"] = True
+    
+    def manual_trade_exit_signal(self, deal_id: str) -> bool:
+        """Check if a trade exit signal is set for a given deal_id."""
+        return self.positions.get(deal_id, {}).get("exit_trade", False)
+        
         
     def remove_position(self, deal_id: str):
         if deal_id in self.positions:
