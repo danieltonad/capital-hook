@@ -9,16 +9,7 @@ class Memory:
     market_data: dict = {}
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
-    
-    def __init__(self):
-        pass
-        # self.positions = {}
-        # self.deal_ids = set()
-        # self.capital_auth_header = {}
-        # self.epics = []
-        # self.instruments = {}
-        # self.market_data = {}
-        # self.preferences = {}
+
         
         
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str):
