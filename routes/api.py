@@ -39,5 +39,6 @@ async def update_preference(request: Request, data: AccountPreferenceModel):
     )
     
 
-
-    
+@api.delete("/trade/{}", tags=["Manual CLoase Trade"])
+async def manual_close_trade(request: Request, deal_id: str):
+    pass
