@@ -288,7 +288,6 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
             
             if not hours:
                 hours = memory.trading_hours = await get_epic_hours(epic)
-                return False
             
             now = datetime.utcnow()
             day = now.strftime("%a").lower()  # "mon"

@@ -1,9 +1,14 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from service.capital_socket import capital_socket
-from service.capital_api import update_auth_header
+from service.capital_socket import capital_socket, memory
+from service.capital_api import update_auth_header, get_epic_hours
 
 
 class Jobs:
+    
+    async def update_epic_hours(self):
+        for epic in capital_socket.subscribed_epics:
+            memory.trading_hours[epic] = await get_epic_hours(epic)
+        print(f"EPIC_HOURS_UPDATED => ", len(capital_socket.subscribed_epics))
     
     async def run(self):
         scheduler = AsyncIOScheduler()
