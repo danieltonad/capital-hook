@@ -1,10 +1,13 @@
 from enums.trade import TradeDirection, TradeInstrument
 from typing import Dict
+
+
 class Memory:
     positions: dict = {}
     deal_ids: set = set()
     capital_auth_header: dict = {}
     epics: list = []
+    trading_hours: dict = {}
     instruments: dict = {}
     market_data: dict = {}
     preferences: dict = {}
