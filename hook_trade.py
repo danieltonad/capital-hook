@@ -1,7 +1,7 @@
 import asyncio
 from enums.trade import TradeDirection, ExitType
 from logger import Logger
-from service.capital_api import open_trade, close_trade
+from service.capital_api import open_trade, close_trade, is_market_closed
 from datetime import datetime
 from database import insert_trade_history
 from enums.trade import TradeInstrument
