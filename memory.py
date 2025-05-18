@@ -77,6 +77,11 @@ class Memory:
         instrument = self.instruments.get(epic, "")
         return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
     
+    def get_leverage_available(self, instrument: TradeInstrument) -> list:
+        """Get the available leverage for a given instrument."""
+        print("INSTRUMENT", instrument)
+        return self.preferences.get("leverages", {}).get(instrument.value, {}).get("available", [1])
+    
     def get_trade_instrument(self, epic: str) -> TradeInstrument:
         """Get the trade instrument for a given epic."""
         return TradeInstrument(self.instruments.get(epic, ""))
