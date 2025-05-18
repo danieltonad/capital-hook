@@ -290,22 +290,25 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
                 hours = memory.trading_hours = await get_epic_hours(epic)
             
             now = datetime.utcnow()
-            day = now.strftime("%a").lower()  # "mon"
-            current_time = now.strftime("%H:%M")  # "14:30"
-            
-            day_hours = hours.get(day, [])
-            for time_range in day_hours:
-                start, end = time_range.split(" - ")
-                if start <= current_time <= end:
+            day_key = now.strftime("%a").lower()
+            day_hours = hours.get(day_key, [])
+
+            if not day_hours:
+                return True   # never opens today
+
+            current_hm = now.strftime("%H:%M")
+            for rng in day_hours:
+                start, end = rng.split(" - ")
+                # print("Start => ", start, "End => ", end)
+                if start <= current_hm <= end:
                     end_hour, end_min = map(int, end.split(":"))
-                end_time = now.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
-                minutes_to_close = (end_time - now).total_seconds() / 60
-                
-                # Handle end times crossing midnight (e.g., "21:05 - 00:00")
-                if end_time < now:
-                    end_time += timedelta(days=1)
-                return True if minutes_to_close >= min else False
-            return False
+                    end_time = now.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+                    if end_time < now:  # handles “cross-midnight”
+                        end_time += timedelta(days=1)
+                    return (end_time - now).total_seconds() / 60 <= min
+            
+            # market closed
+            return True
 
         except Exception as e:
             return False
