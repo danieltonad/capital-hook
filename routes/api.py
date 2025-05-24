@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 from service.capital_api import set_account_preferences
-from model import AccountPreferenceModel
-from memory import memory
+from model import AccountPreferenceModel, memory
+
 
 api = APIRouter()
 
@@ -39,5 +39,6 @@ async def update_preference(request: Request, data: AccountPreferenceModel):
     )
     
 
-
-    
+@api.delete("/trade/{deal_id}", tags=["Manual Close Trade"])
+async def manual_close_trade(request: Request, deal_id: str):
+    pass

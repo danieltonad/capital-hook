@@ -3,7 +3,7 @@ from settings import settings
 from enums.trade import TradeDirection
 from memory import memory
 from logger import Logger
-
+from datetime import datetime, timedelta
 
 async def update_auth_header() -> None:
     try:
@@ -251,10 +251,69 @@ async def set_account_preferences(leverages: dict = None, hedging_mode: bool = N
             return False
     except Exception as e:
         await Logger.app_log(title="PREF_SET_ERR", message=str(e))
-        return False    
-     
-            
+        return False 
     
+    
+    
+async def get_epic_hours(epic: str):
+        try:
+            response = await settings.session.get(
+                f"{settings.get_capital_host()}/api/v1/markets/{epic}", 
+                headers= memory.capital_auth_header,
+                )
+            if response.status_code != 200:
+                await Logger.app_log(
+                    title="EPIC_HRS_ERR",
+                    message=f"Failed to fetch {epic} hours: {response.status_code}"
+                )
+                return None
+            
+            data = response.json()
+            instrument = data.get("instrument", {})
+            hours = instrument.get("openingHours", {})
+            if not hours:
+                await Logger.app_log(title="NO_DATA", message=f"No hours for {epic}")
+                return None
+            return hours
+        
+        except Exception as e:
+            await Logger.app_log(title="EPIC_HRS_ERR", message=f"{epic}: {str(e)}")
+            return None
+           
+     
+                     
+async def is_market_closed(epic: str, min: int = 5) -> bool:
+        try:
+            hours = memory.trading_hours.get(epic, {})
+            
+            if not hours:
+                hours = memory.trading_hours = await get_epic_hours(epic)
+            
+            now = datetime.utcnow()
+            day_key = now.strftime("%a").lower()
+            day_hours = hours.get(day_key, [])
+
+            if not day_hours:
+                return True   # never opens today
+
+            current_hm = now.strftime("%H:%M")
+            for rng in day_hours:
+                start, end = rng.split(" - ")
+                # print("Start => ", start, "End => ", end)
+                if start <= current_hm <= end:
+                    end_hour, end_min = map(int, end.split(":"))
+                    end_time = now.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+                    if end_time < now:  # handles “cross-midnight”
+                        end_time += timedelta(days=1)
+                    return (end_time - now).total_seconds() / 60 <= min
+            
+            # market closed
+            return True
+
+        except Exception as e:
+            return False
+        
+        
 
 async def portfolio_balance():
     try:

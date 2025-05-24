@@ -1,6 +1,6 @@
 from settings import settings
 from memory import memory
-from service.capital_api import update_auth_header, update_markets
+from service.capital_api import update_auth_header, update_markets, is_market_closed
 import asyncio
 
 
@@ -8,10 +8,12 @@ import asyncio
 async def play_book():
     await update_auth_header()
     
-    await update_markets()
-    epic = "US500" #memory.epics[347]
-    instrument = memory.instruments[epic]
-    print(epic, instrument)
+    # await update_markets()
+    # epic = "US500" #memory.epics[347]
+    # instrument = memory.instruments[epic]
+    # print(epic, instrument)
+    print(await is_market_closed("AAPL"))
+    
     
     
     await settings.session.aclose()

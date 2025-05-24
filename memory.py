@@ -1,35 +1,46 @@
 from enums.trade import TradeDirection, TradeInstrument
 from typing import Dict
+
+
 class Memory:
     positions: dict = {}
     deal_ids: set = set()
     capital_auth_header: dict = {}
     epics: list = []
+    trading_hours: dict = {}
     instruments: dict = {}
     market_data: dict = {}
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
-    
-    def __init__(self):
-        pass
-        # self.positions = {}
-        # self.deal_ids = set()
-        # self.capital_auth_header = {}
-        # self.epics = []
-        # self.instruments = {}
-        # self.market_data = {}
-        # self.preferences = {}
+
         
         
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str):
-        self.positions[deal_id] = {
-            "epic": epic,
-            "pnl": pnl,
-            "trade_direction": trade_direction,
-            "trade_size": trade_size,
-            "hook_name": hook_name
-            
-        }
+        if self.positions.get(deal_id):
+            self.positions[deal_id]["pnl"] = pnl
+            self.positions[deal_id]["trade_direction"] = trade_direction
+            self.positions[deal_id]["epic"] = epic
+            self.positions[deal_id]["trade_size"] = trade_size
+            self.positions[deal_id]["hook_name"] = hook_name
+            pass
+        else:
+            self.positions[deal_id] = {
+                "epic": epic,
+                "pnl": pnl,
+                "trade_direction": trade_direction,
+                "trade_size": trade_size,
+                "hook_name": hook_name,
+                "exit_trade": False,
+            }
+        
+    def manual_close_position(self, deal_id: str):
+        if deal_id in self.positions:
+            self.positions[deal_id]["exit_trade"] = True
+    
+    def manual_trade_exit_signal(self, deal_id: str) -> bool:
+        """Check if a trade exit signal is set for a given deal_id."""
+        return self.positions.get(deal_id, {}).get("exit_trade", False)
+        
         
     def remove_position(self, deal_id: str):
         if deal_id in self.positions:
@@ -66,6 +77,10 @@ class Memory:
         instrument = self.instruments.get(epic, "")
         return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
     
+    def get_leverage_available(self, instrument: TradeInstrument) -> list:
+        """Get the available leverage for a given instrument."""
+        return self.preferences.get("leverages", {}).get(instrument.value, {}).get("available", [1])
+    
     def get_trade_instrument(self, epic: str) -> TradeInstrument:
         """Get the trade instrument for a given epic."""
         return TradeInstrument(self.instruments.get(epic, ""))
@@ -75,6 +90,7 @@ class Memory:
     
     def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:
         return self.hooked_trades.get(f"{epic}_{hook_name}", TradeDirection.NEUTRAL)
+    
         
         
     
