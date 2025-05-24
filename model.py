@@ -1,10 +1,8 @@
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, conint, root_validator
 from enums.trade import TradeDirection
 from typing import Annotated
 from typing import Literal
 from memory import memory, TradeInstrument
-
-a = memory.get_leverage_available(TradeInstrument.CRYPTOCURRENCIES)
 
 class TradingViewWebhookModel(BaseModel):
     epic: str
@@ -16,11 +14,22 @@ class TradingViewWebhookModel(BaseModel):
     
     
 class LeverageModel(BaseModel):
-    CRYPTOCURRENCIES: Literal[a]
+    CRYPTOCURRENCIES: int
     SHARES: int
     INDICES: int
     CURRENCIES: int
     COMMODITIES: int
+    
+    @root_validator
+    def validate_all_fields(cls, values):
+        for field, value in values.items():
+            if not isinstance(value, int):
+                raise ValueError(f"{field} must be an integer")
+            if value <= 0:
+                raise ValueError(f"{field} must be greater than 0")
+        return values
+    
+    
 
 class AccountPreferenceModel(BaseModel):
     hedging_mode: bool
