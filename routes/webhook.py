@@ -26,7 +26,7 @@ async def tradingview_webhook_route(data: TradingViewWebhookModel, request: Requ
         await Logger.app_log(title="TradingView_Webhook_Error", message=f"Trade already executed for {data.epic} {data.direction.value}")
     else:
         from hook_trade import HookedTradeExecution
-        hooked_trade = HookedTradeExecution(epic=data.epic, trade_amount=data.amount, profit=data.profit, loss=data.loss, hook_name=data.hook_name, trade_direction=data.direction)
+        hooked_trade = HookedTradeExecution(epic=data.epic, trade_amount=data.amount, profit=data.profit, loss=data.loss, hook_name=data.hook_name, trade_direction=data.direction, exit_criteria=data.exit_criteria)
         background_task.add_task(hooked_trade.execute_trade)
         
         memory.update_trading_view_hooked_trades(epic=data.epic, direction=data.direction, hook_name=data.hook_name) # update the hooked trades in settings
