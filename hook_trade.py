@@ -101,30 +101,37 @@ class HookedTradeExecution:
         memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, hook_name=self.hook_name)
         
         # reward monitor long
-        if current_price >= self.target_profit_price and self.trade_direction == TradeDirection.BUY:
+        if ExitType.TP in self.exit_criteria and current_price >= self.target_profit_price and self.trade_direction == TradeDirection.BUY:
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
             self.exit_type = ExitType.TP
             await self.log_trade("closed")
             return True, profit_loss, percentage
         
         # risk monitor long
-        elif current_price <= self.stop_loss_price and self.trade_direction == TradeDirection.BUY:
+        elif ExitType.SL in self.exit_criteria and current_price <= self.stop_loss_price and self.trade_direction == TradeDirection.BUY:
                 await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
                 self.exit_type = ExitType.SL
                 await self.log_trade("closed")
                 return True, profit_loss, percentage
             
         # reward monitor short
-        elif current_price <= self.target_profit_price and self.trade_direction == TradeDirection.SELL:
+        elif ExitType.TP in self.exit_criteria and current_price <= self.target_profit_price and self.trade_direction == TradeDirection.SELL:
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
             self.exit_type = ExitType.TP
             self.log_trade("closed")
             return True, profit_loss, percentage
         
         # risk monitor short
-        elif current_price >= self.stop_loss_price and self.trade_direction == TradeDirection.SELL:
+        elif ExitType.SL in self.exit_criteria and current_price >= self.stop_loss_price and self.trade_direction == TradeDirection.SELL:
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
             self.exit_type = ExitType.SL
+            await self.log_trade("closed")
+            return True, profit_loss, percentage
+        
+        # market closed?
+        elif ExitType.MKT_CLOSED in self.exit_criteria and await is_market_closed(self.epic):
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            self.exit_type = ExitType.MKT_CLOSED
             await self.log_trade("closed")
             return True, profit_loss, percentage
             
