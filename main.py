@@ -33,6 +33,9 @@ async def startup_event():
     
     # initialize jobs
     await jobs.run()
+    from enums.trade import TradeInstrument
+    a = memory.get_leverage_available(TradeInstrument.CRYPTOCURRENCIES)
+    print(a)
     
     
 @app.on_event("shutdown")
