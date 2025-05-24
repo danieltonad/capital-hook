@@ -90,6 +90,7 @@ class Memory:
     
     def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:
         return self.hooked_trades.get(f"{epic}_{hook_name}", TradeDirection.NEUTRAL)
+    
         
         
     

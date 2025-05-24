@@ -1,7 +1,7 @@
 from pydantic import BaseModel, conint, root_validator
-from enums.trade import TradeDirection
+from enums.trade import TradeDirection, ExitType
 from typing import Annotated
-from typing import Literal
+from typing import Literal, List, Optional
 from memory import memory, TradeInstrument
 
 class TradingViewWebhookModel(BaseModel):
@@ -11,6 +11,7 @@ class TradingViewWebhookModel(BaseModel):
     hook_name: str
     profit: Annotated[int, conint(ge=1)] 
     loss: Annotated[int, conint(ge=1)] 
+    exit_criteria: List[ExitType]
     
     
 class LeverageModel(BaseModel):
