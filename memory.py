@@ -12,9 +12,15 @@ class Memory:
     market_data: dict = {}
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
+    console_data: dict = {"msg": []}
 
         
-        
+    def update_console_data_msg(self, msg: str):
+        """Update the console data message."""
+        self.console_data["msg"].append(msg)
+        if len(self.console_data["msg"]) > 5:
+            self.console_data["msg"].pop(0)
+    
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str):
         if self.positions.get(deal_id):
             self.positions[deal_id]["pnl"] = pnl
