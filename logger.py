@@ -14,7 +14,7 @@ class Logger:
             
     @staticmethod
     async def console_live_feed():
-        length = len(memory.console_data) + len(memory.console_data["msg"]) + 1
+        length = len(memory.console_data) + len(memory.console_data["msg"]) + 2
         sys.stdout.write(f"\033[{length}A")  # ANSI escape: move cursor up N lines
         # positions view
         print("Positions:")
@@ -35,7 +35,7 @@ class Logger:
                 await asyncio.sleep(interval_sec)
                 import random
                 memory.update_console_data_msg(f" msg -{random.randint(1, 100)}")
-                memory.console_data[random.choice([1,2,3,4,5,])] = f"[{random.choice("LONG", "SHORT")}] -> {random.randint(1, 100)}"
+                memory.console_data[random.choice([1,2,3,4,5,])] = f"[{random.choice(['LONG', 'SHORT'])}] -> {random.randint(1, 100)}"
         except asyncio.CancelledError:
             print("Console feed stopped.")
         
