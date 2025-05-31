@@ -1,13 +1,24 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from service.capital_api import set_account_preferences
+from service.capital_api import set_account_preferences, portfolio_balance
 from model import AccountPreferenceModel, memory
 
 
 api = APIRouter()
 
 
-@api.get("/history", tags=["Trade History"])
+@api.get("/portfolio")
+async def get_portfolio(request: Request):
+    """
+    Get the portfolio overview.
+    """
+    portfolio = await portfolio_balance()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=portfolio
+    )
+
+@api.get("/history")
 async def get_history(request: Request):
     """
     Get the history of trades.
@@ -15,7 +26,7 @@ async def get_history(request: Request):
     pass
 
 
-@api.get("/preference", tags=["Account Preference"])
+@api.get("/preference")
 async def get_preference(request: Request):
     """
     Get the account preference.
@@ -26,7 +37,7 @@ async def get_preference(request: Request):
     )
     
     
-@api.put("/preferences", tags=["Update Account Preference"])
+@api.put("/preferences")
 async def update_preference(request: Request, data: AccountPreferenceModel):
     """
     Update the account preference.
@@ -39,6 +50,6 @@ async def update_preference(request: Request, data: AccountPreferenceModel):
     )
     
 
-@api.delete("/trade/{deal_id}", tags=["Manual Close Trade"])
+@api.delete("/trade/{deal_id}")
 async def manual_close_trade(request: Request, deal_id: str):
     pass
