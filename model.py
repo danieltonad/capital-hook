@@ -1,4 +1,4 @@
-from pydantic import BaseModel, conint, root_validator
+from pydantic import BaseModel, conint
 from enums.trade import TradeDirection, ExitType
 from typing import Annotated
 from typing import Literal, List, Optional
@@ -20,15 +20,6 @@ class LeverageModel(BaseModel):
     INDICES: int
     CURRENCIES: int
     COMMODITIES: int
-    
-    @root_validator
-    def validate_all_fields(cls, values):
-        for field, value in values.items():
-            if not isinstance(value, int):
-                raise ValueError(f"{field} must be an integer")
-            if value <= 0:
-                raise ValueError(f"{field} must be greater than 0")
-        return values
     
     
 
