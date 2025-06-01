@@ -15,10 +15,12 @@ class CapitalSocket:
         """Connect to Capital.com WebSocket if not already connected."""
         if not self.websocket:
             uri = "wss://api-streaming-capital.backend-capital.com/connect"
-            self.websocket = await websockets.connect(uri)
+            self.websocket = await websockets.connect(uri, ping_interval=60, ping_timeout=30)
             self.running = True
+            
+            if not self._listen_task or self._listen_task.done():
+                self._listen_task = asyncio.create_task(self._listen())
             await Logger.app_log(title="WS_CONNECT", message="WebSocket connected")
-            asyncio.create_task(self._listen())  # Start listening in background
             
     async def ping_socket(self):
         """Ping socket service to keep connection alive."""
@@ -89,39 +91,58 @@ class CapitalSocket:
 
 
     async def _listen(self):
-        """Background task to process incoming WebSocket messages."""
+        """Listen for incoming WebSocket messages and handle reconnections."""
         try:
             while self.running and self.websocket:
-                message = await self.websocket.recv()
-                data = json.loads(message)              
-                if data["destination"] == "marketData.subscribe":
-                    await Logger.app_log(
-                        title="SUBSCRIBE_CONFIRM",
-                        message=f"Subscription: {data['payload']['subscriptions']}"
-                    )
-                elif data["destination"] == "marketData.unsubscribe":
-                    await Logger.app_log(
-                        title="UNSUBSCRIBE_CONFIRM",
-                        message=f"Unsubscription: {data['payload']['subscriptions']}"
-                    )
-                elif data["destination"] == "quote":
-                    payload = data["payload"]
-                    memory.update_market_data(epic=payload["epic"], ask=payload["ofr"], bid=payload["bid"], timestamp=payload["timestamp"])
-                else:
-                    await asyncio.sleep(5)
-                
+                try:
+                    message = await asyncio.wait_for(self.websocket.recv(), timeout=300)
+                    data = json.loads(message)
+
+                    if data["destination"] == "marketData.subscribe":
+                        await Logger.app_log(
+                            title="SUBSCRIBE_CONFIRM",
+                            message=f"Subscription: {data['payload']['subscriptions']}"
+                        )
+                    elif data["destination"] == "marketData.unsubscribe":
+                        await Logger.app_log(
+                            title="UNSUBSCRIBE_CONFIRM",
+                            message=f"Unsubscription: {data['payload']['subscriptions']}"
+                        )
+                    elif data["destination"] == "quote":
+                        payload = data["payload"]
+                        await self.update_market_data(
+                            epic=payload["epic"],
+                            ask=payload["ofr"],
+                            bid=payload["bid"],
+                            timestamp=payload["timestamp"]
+                        )
+
+                except (asyncio.TimeoutError, websockets.exceptions.ConnectionClosedError) as e:
+                    await Logger.app_log(title="WS_LISTEN_ERR", message=str(e))
+                    break  # Exit inner loop to reconnect
+
         except Exception as e:
-            await Logger.app_log(title="WS_LISTEN_ERR", message=str(e))
+            await Logger.app_log(title="WS_LISTEN_ERR", message=f"Unhandled: {str(e)}")
+
+        finally:
             self.running = False
-            await self.websocket.close()
-            # reconnect
-            self.websocket = None
-            await self.connect_websocket()
-            print("WebSocket connection closed, attempting to reconnect...")
-            epics = self.subscribed_epics
-            self.subscribed_epics = set()
+            if self.websocket:
+                try:
+                    await self.websocket.close()
+                except Exception as close_error:
+                    await Logger.app_log(title="WS_CLOSE_ERR", message=str(close_error))
+                self.websocket = None
+
+            self._listen_task = None  # Mark task as finished
+            await Logger.app_log(title="WS_RECONNECT", message="Reconnecting WebSocket...")
+            await asyncio.sleep(1)  # Prevent reconnect flood
+
+            # Resubscribe to previous epics after reconnect
+            epics = list(self.subscribed_epics)
+            self.subscribed_epics.clear()
             for epic in epics:
                 await self.subscribe_to_epic(epic)
+                await asyncio.sleep(0.5)
 
 
 
