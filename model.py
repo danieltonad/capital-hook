@@ -1,8 +1,7 @@
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, conint, model_validator, field_validator
 from enums.trade import TradeDirection, ExitType
 from typing import Annotated
 from typing import Literal, List, Optional
-from memory import memory, TradeInstrument
 
 class TradingViewWebhookModel(BaseModel):
     epic: str
@@ -15,15 +14,29 @@ class TradingViewWebhookModel(BaseModel):
     
     
 class LeverageModel(BaseModel):
-    CRYPTOCURRENCIES: int
-    SHARES: int
-    INDICES: int
-    CURRENCIES: int
-    COMMODITIES: int
-    
-    
+    CRYPTOCURRENCIES: Optional[int] = None
+    SHARES: Optional[int] = None
+    INDICES: Optional[int] = None
+    CURRENCIES: Optional[int] = None
+    COMMODITIES: Optional[int] = None
 
+    @model_validator(mode="after")
+    def check_at_least_one(self):
+        if not any([
+            self.CRYPTOCURRENCIES, self.SHARES,
+            self.INDICES, self.CURRENCIES, self.COMMODITIES
+        ]):
+            raise ValueError('At least one leverage field must be provided')
+        return self
+    
+    
 class AccountPreferenceModel(BaseModel):
-    hedging_mode: bool
-    leverages: LeverageModel
+    hedging_mode: Optional[bool] = None
+    leverages: Optional[LeverageModel] = None
+
+    @model_validator(mode="after")
+    def check_at_least_one(self):
+        if self.hedging_mode is None and self.leverages is None:
+            raise ValueError('At least one account preference field must be provided')
+        return self
     
