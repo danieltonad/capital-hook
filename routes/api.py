@@ -18,6 +18,16 @@ async def get_portfolio(request: Request):
         content=portfolio
     )
 
+@api.get("/positions")
+async def get_portfolio(request: Request):
+    """
+    Poll Positions
+    """
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=memory.positions
+    )
+
 @api.get("/history")
 async def get_history(request: Request):
     """
@@ -52,4 +62,4 @@ async def update_preference(request: Request, data: AccountPreferenceModel):
 
 @api.delete("/trade/{deal_id}")
 async def manual_close_trade(request: Request, deal_id: str):
-    pass
+    memory.manual_close_position(deal_id)
