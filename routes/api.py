@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from service.capital_api import set_account_preferences, portfolio_balance
-from model import AccountPreferenceModel, memory
+from service.capital_api import set_account_preferences, portfolio_balance, memory
+from model import AccountPreferenceModel
 
 
 api = APIRouter()
@@ -54,6 +54,7 @@ async def update_preference(request: Request, data: AccountPreferenceModel):
     """
     data = await request.json()
     memory.preferences.update(data)
+    # await set_account_preferences(hedging_mode=data.hedging_mode, leverages=data.leverages)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=memory.preferences
