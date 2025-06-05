@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 from service.capital_api import set_account_preferences, portfolio_balance, memory
-from model import AccountPreferenceModel
+from model import AccountPreferenceModel, HookPayloadModel
 
 
 api = APIRouter()
@@ -67,18 +67,12 @@ async def manual_close_trade(request: Request, deal_id: str):
     
     
 @api.post("/generate-payload")
-async def generate_payload(request: Request):
+async def generate_payload(data: HookPayloadModel):
     """
     Generate a payload for a trade.
     """
-    data = await request.json()
-    payload = {
-        "epic": data.get("epic"),
-        "trade_size": data.get("trade_size"),
-        "direction": data.get("direction"),
-        "stop_loss": data.get("stop_loss"),
-        "take_profit": data.get("take_profit")
-    }
+    
+    payload = ""
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=payload
