@@ -47,19 +47,6 @@ async def get_preference(request: Request):
     )
     
     
-# @api.put("/preferences")
-# async def update_preference(request: Request, data: AccountPreferenceModel):
-#     """
-#     Update the account preference.
-#     """
-#     data = await request.json()
-#     memory.preferences.update(data)
-#     # await set_account_preferences(hedging_mode=data.hedging_mode, leverages=data.leverages)
-#     return JSONResponse(
-#         status_code=status.HTTP_200_OK,
-#         content=memory.preferences
-    # )
-    
 
 @api.delete("/trade/{deal_id}")
 async def manual_close_trade(request: Request, deal_id: str):
