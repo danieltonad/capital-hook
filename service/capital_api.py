@@ -321,7 +321,7 @@ async def portfolio_balance():
         response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=header)
         if response.status_code == 200:
             data = response.json()
-            return data["accounts"]
+            return data["accounts"][0]
     except Exception as e:
         await Logger.app_log(title="PORTFOLIO_ERR", message=str(e))
         return {}
