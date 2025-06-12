@@ -9,9 +9,21 @@ templates = Jinja2Templates(directory="views")
 
 @view.get("/", tags=["Dashboard"])
 async def dashboard_view(request: Request) -> _TemplateResponse:
+    from service.capital_api import portfolio_balance
+    data = await portfolio_balance()
+    portfolio = data.get("balance", {})
+    symbol = data.get("symbol", "#")
     data = {
-        "positions": {}
+        "positions": {},
+        "portfolio": {
+            "balance": f"{symbol}{portfolio.get('balance', 0):,}",
+            "deposit": f"{symbol}{portfolio.get('deposit', 0):,}",
+            "available": f"{symbol}{portfolio.get('available', 0):,}",
+            "pnl": f"{symbol}{portfolio.get('profitLoss', 0):,}",
+
+        }
     }
+    print(f"Portfolio: {data['portfolio']}")
     return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
 
 @view.get("/config", tags=["Config"])

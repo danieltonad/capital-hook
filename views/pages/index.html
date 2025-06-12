@@ -12,19 +12,19 @@
 			<div class="portfolio-stats">
 				<div class="stat-box">
 					<div class="label">Total Asset</div>
-					<div class="value">$4,892.12</div>
-				</div>
-				<div class="stat-box">
-					<div class="label">Deposit</div>
-					<div class="value">$4,892.12</div>
+					<div class="value">{{data.portfolio.balance}}</div>
 				</div>
 				<div class="stat-box">
 					<div class="label">Available</div>
-					<div class="value">$4,892.12</div>
+					<div class="value">{{data.portfolio.available}}</div>
+				</div>
+				<div class="stat-box">
+					<div class="label">Deposit</div>
+					<div class="value">${{data.portfolio.deposit}}</div>
 				</div>
 				<div class="stat-box">
 					<div class="label">PnL</div>
-					<div class="value">$4,892.12</div>
+					<div class="value">{{data.portfolio.pnl}}</div>
 				</div>
 			</div>
 		</div>
