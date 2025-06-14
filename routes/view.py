@@ -23,7 +23,6 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
 
         }
     }
-    print(f"Portfolio: {data['portfolio']}")
     return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
 
 @view.get("/config", tags=["Config"])
