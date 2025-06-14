@@ -8,7 +8,7 @@ api = APIRouter()
 
 
 @api.get("/portfolio")
-async def get_portfolio(request: Request):
+async def get_portfolio():
     """
     Get the portfolio overview.
     """
@@ -19,7 +19,7 @@ async def get_portfolio(request: Request):
     )
 
 @api.get("/positions")
-async def get_portfolio(request: Request):
+async def get_portfolio():
     """
     Poll Positions
     """
