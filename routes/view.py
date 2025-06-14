@@ -31,16 +31,16 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
         })
 
     # dummy
-    positions.append({
-        "deal_id": "position",
-        "epic": "N/A",
-        "leverage": "200:1",
-        "pnl": -12.3,
-        "direction": "BUY",
-        "size": 1.23,
-        "hook_name": "10/20 EMA",
-        "date":"19 May 13:11",
-    })
+    # positions.append({
+    #     "deal_id": "position",
+    #     "epic": "N/A",
+    #     "leverage": "200:1",
+    #     "pnl": -12.3,
+    #     "direction": "BUY",
+    #     "size": 1.23,
+    #     "hook_name": "10/20 EMA",
+    #     "date":"19 May 13:11",
+    # })
 
     data = {
         "positions": positions,
