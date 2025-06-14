@@ -13,6 +13,7 @@ class Memory:
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
     console_data: dict = {"msg": []}
+    portfolio: dict = {}
 
         
     def update_console_data_msg(self, msg: str):
