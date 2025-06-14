@@ -9,7 +9,12 @@
 					<input type="checkbox" class="toggle-checkbox" />
 				</label>
 			</div>
-			<div class="portfolio-stats">
+			<div
+				class="portfolio-stats"
+				hx-get="/portfolio"
+				hx-trigger="load, every 30s"
+				hx-swap="innerHTML"
+			>
 				<div class="stat-box">
 					<div class="label">Total Asset</div>
 					<div class="value">{{data.portfolio.balance}}</div>

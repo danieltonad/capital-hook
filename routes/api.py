@@ -29,7 +29,7 @@ async def get_portfolio():
     )
 
 @api.get("/history")
-async def get_history(request: Request):
+async def get_history():
     """
     Get the history of trades.
     """
@@ -37,7 +37,7 @@ async def get_history(request: Request):
 
 
 @api.get("/preference")
-async def get_preference(request: Request):
+async def get_preference():
     """
     Get the account preference.
     """
