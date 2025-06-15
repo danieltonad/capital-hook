@@ -23,9 +23,9 @@ class Memory:
             self.console_data["msg"].pop(0)
     
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str):
-        if self.positions.get(deal_id):
-            self.positions[deal_id]["pnl"] = pnl
-            self.positions[deal_id]["trade_direction"] = trade_direction
+        if self.positions.get(deal_id, None):
+            self.positions[deal_id]["pnl"] = f"{pnl:,.2f}"
+            self.positions[deal_id]["trade_direction"] = trade_direction.value
             self.positions[deal_id]["epic"] = epic
             self.positions[deal_id]["trade_size"] = trade_size
             self.positions[deal_id]["hook_name"] = hook_name
@@ -34,12 +34,12 @@ class Memory:
         else:
             self.positions[deal_id] = {
                 "epic": epic,
-                "pnl": pnl,
-                "trade_direction": trade_direction,
-                "trade_size": trade_size,
-                "hook_name": hook_name,
+                "pnl": f"{pnl:,.2f}",
+                # "trade_direction": trade_direction.value,
+                # "trade_size": trade_size,
+                # "hook_name": hook_name,
                 "exit_trade": False,
-                "entry_date": entry_date,
+                # "entry_date": entry_date,
             }
         
     def manual_close_position(self, deal_id: str):
