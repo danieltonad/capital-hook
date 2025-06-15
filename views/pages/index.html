@@ -49,7 +49,11 @@
 							<th></th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody
+						hx-get="/positions"
+						hx-trigger="load, every 1s"
+						hx-swap="innerHTML"
+					>
 						{% for position in data.positions %}
 						<tr>
 							<td>{{position.epic}}</td>

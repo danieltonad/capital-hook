@@ -67,7 +67,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
             "deal_id": position,
             "epic": memory.positions[position].get("epic", "N/A"),
             "leverage": leverage,
-            "pnl": f"{symbol}{memory.positions[position].get('pnl', 0):,}",
+            "pnl": f"{symbol}{memory.positions[position].get('pnl', 0)}",
             "direction": memory.positions[position].get("trade_direction", "N/A"),
             "size": memory.positions[position].get("trade_size", 0),
             "hook_name": memory.positions[position].get("hook_name", "N/A"),
@@ -77,7 +77,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     data = {
         "positions": positions
     }
-    return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
+    return templates.TemplateResponse("components/positions.html", {"request": request, "data": data})
 
 
 @view.get("/portfolio", tags=["Positions"])

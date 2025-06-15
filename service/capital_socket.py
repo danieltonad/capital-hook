@@ -111,7 +111,7 @@ class CapitalSocket:
                         )
                     elif data["destination"] == "quote":
                         payload = data["payload"]
-                        await self.update_market_data(
+                        memory.update_market_data(
                             epic=payload["epic"],
                             ask=payload["ofr"],
                             bid=payload["bid"],

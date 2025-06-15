@@ -37,6 +37,7 @@ class HookedTradeExecution:
         self.profit = profit
         self.loss = loss
         self.deal_id = None
+        self.exit_criteria = exit_criteria
         self.leverage = memory.get_leverage(epic)
         self.trade_instrument = memory.get_trade_instrument(epic)
         
@@ -100,7 +101,7 @@ class HookedTradeExecution:
         current_price = bid if self.trade_direction == TradeDirection.BUY else ask
         profit_loss, percentage = self.__calculate_profit_loss(current_price)
         self.exit_price = ask if self.trade_direction == TradeDirection.BUY else bid
-        memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, hook_name=self.hook_name)
+        memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), hook_name=self.hook_name)
         
         # reward monitor long
         if ExitType.TP in self.exit_criteria and current_price >= self.target_profit_price and self.trade_direction == TradeDirection.BUY:
