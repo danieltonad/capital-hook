@@ -55,6 +55,30 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     print(data["positions"])
     return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
 
+@view.get("/positions", tags=["Positions"])
+async def dashboard_view(request: Request) -> _TemplateResponse:
+    positions = []
+    
+    for position in memory.positions.keys():
+        leverage = memory.get_leverage(memory.positions[position].get("epic", ""))
+        leverage = f"{leverage}:1"
+        symbol = memory.portfolio.get("symbol", "#")
+        positions.append({
+            "deal_id": position,
+            "epic": memory.positions[position].get("epic", "N/A"),
+            "leverage": leverage,
+            "pnl": f"{symbol}{memory.positions[position].get('pnl', 0):,}",
+            "direction": memory.positions[position].get("trade_direction", "N/A"),
+            "size": memory.positions[position].get("trade_size", 0),
+            "hook_name": memory.positions[position].get("hook_name", "N/A"),
+            "date": memory.positions[position].get("entry_date", "N/A"),
+        })
+
+    data = {
+        "positions": positions
+    }
+    return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
+
 
 @view.get("/portfolio", tags=["Positions"])
 async def dashboard_view(request: Request) -> _TemplateResponse:
