@@ -9,6 +9,7 @@ class CapitalSocket:
         self.websocket = None
         self.running = False
         self.subscribed_epics = set()
+        self._listen_task = None
 
     
     async def connect_websocket(self):
