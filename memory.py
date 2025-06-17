@@ -12,25 +12,34 @@ class Memory:
     market_data: dict = {}
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
+    console_data: dict = {"msg": []}
+    portfolio: dict = {}
 
         
-        
-    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str):
-        if self.positions.get(deal_id):
-            self.positions[deal_id]["pnl"] = pnl
-            self.positions[deal_id]["trade_direction"] = trade_direction
+    def update_console_data_msg(self, msg: str):
+        """Update the console data message."""
+        self.console_data["msg"].append(msg)
+        if len(self.console_data["msg"]) > 5:
+            self.console_data["msg"].pop(0)
+    
+    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str):
+        if self.positions.get(deal_id, None):
+            self.positions[deal_id]["pnl"] = f"{pnl:,.2f}"
+            self.positions[deal_id]["trade_direction"] = trade_direction.value
             self.positions[deal_id]["epic"] = epic
             self.positions[deal_id]["trade_size"] = trade_size
             self.positions[deal_id]["hook_name"] = hook_name
+            self.positions[deal_id]["entry_date"] = entry_date
             pass
         else:
             self.positions[deal_id] = {
                 "epic": epic,
-                "pnl": pnl,
-                "trade_direction": trade_direction,
-                "trade_size": trade_size,
-                "hook_name": hook_name,
+                "pnl": f"{pnl:,.2f}",
+                # "trade_direction": trade_direction.value,
+                # "trade_size": trade_size,
+                # "hook_name": hook_name,
                 "exit_trade": False,
+                # "entry_date": entry_date,
             }
         
     def manual_close_position(self, deal_id: str):

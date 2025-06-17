@@ -1,6 +1,84 @@
 {% extends "layout/dashboard.html" %} {% block content %}
-<div class="container">
-	<h1>Welcome to Capital Hook</h1>
-	<p>Use the navigation bar to explore the app.</p>
+<div class="platform-container-cover">
+	<div class="platform-container">
+		<div class="sidebar">
+			<div class="sidebar-header">
+				<h3>Portfolio</h3>
+				<label class="toggle-label">
+					<i data-lucide="panel-right-close"></i>
+					<input type="checkbox" class="toggle-checkbox" />
+				</label>
+			</div>
+			<div
+				class="portfolio-stats"
+				hx-get="/portfolio"
+				hx-trigger="load, every 30s"
+				hx-swap="innerHTML"
+			>
+				<div class="stat-box">
+					<div class="label">Total Asset</div>
+					<div class="value">{{data.portfolio.balance}}</div>
+				</div>
+				<div class="stat-box">
+					<div class="label">Available</div>
+					<div class="value">{{data.portfolio.available}}</div>
+				</div>
+				<div class="stat-box">
+					<div class="label">Deposit</div>
+					<div class="value">{{data.portfolio.deposit}}</div>
+				</div>
+				<div class="stat-box">
+					<div class="label">PnL</div>
+					<div class="value">{{data.portfolio.pnl}}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="content">
+			<div class="trading-history">
+				<table>
+					<thead>
+						<tr>
+							<th>Epic</th>
+							<th>size</th>
+							<th>direction</th>
+							<th>leverage</th>
+							<th>entry date</th>
+							<th>P&L</th>
+							<th>hook name</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody
+						hx-get="/positions"
+						hx-trigger="load, every 1s"
+						hx-swap="innerHTML"
+					>
+						{% for position in data.positions %}
+						<tr>
+							<td>{{position.epic}}</td>
+							<td>{{position.size}}</td>
+							<td>{{position.direction}}</td>
+							<td>{{position.leverage}}</td>
+							<td>{{position.date}}</td>
+							<td>{{position.pnl}}</td>
+							<td>{{position.hook_name}}</td>
+							<td>
+								<button
+									hx-delete="/api/trade/{{position.deal_id}}"
+									hx-target="closest tr"
+									hx-swap="outerHTML swap:1s"
+									class="close-btn"
+								>
+									close
+								</button>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </div>
 {% endblock %}

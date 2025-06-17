@@ -1,22 +1,43 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from service.capital_api import set_account_preferences
-from model import AccountPreferenceModel, memory
+from service.capital_api import set_account_preferences, portfolio_balance, memory
+from model import AccountPreferenceModel, HookPayloadModel
 
 
 api = APIRouter()
 
 
-@api.get("/history", tags=["Trade History"])
-async def get_history(request: Request):
+@api.get("/portfolio")
+async def get_portfolio():
+    """
+    Get the portfolio overview.
+    """
+    portfolio = await portfolio_balance()
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=portfolio
+    )
+
+@api.get("/positions")
+async def get_portfolio():
+    """
+    Poll Positions
+    """
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=memory.positions
+    )
+
+@api.get("/history")
+async def get_history():
     """
     Get the history of trades.
     """
     pass
 
 
-@api.get("/preference", tags=["Account Preference"])
-async def get_preference(request: Request):
+@api.get("/preference")
+async def get_preference():
     """
     Get the account preference.
     """
@@ -26,19 +47,20 @@ async def get_preference(request: Request):
     )
     
     
-@api.put("/preferences", tags=["Update Account Preference"])
-async def update_preference(request: Request, data: AccountPreferenceModel):
+
+@api.delete("/trade/{deal_id}")
+async def manual_close_trade(request: Request, deal_id: str):
+    memory.manual_close_position(deal_id)
+    
+    
+@api.post("/generate-payload")
+async def generate_payload(data: HookPayloadModel):
     """
-    Update the account preference.
+    Generate a payload for a trade.
     """
-    data = await request.json()
-    memory.preferences.update(data)
+    
+    payload = ""
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=memory.preferences
+        content=payload
     )
-    
-
-@api.delete("/trade/{deal_id}", tags=["Manual Close Trade"])
-async def manual_close_trade(request: Request, deal_id: str):
-    pass

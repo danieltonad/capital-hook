@@ -1,5 +1,6 @@
-import aiofiles
+import aiofiles, sys, asyncio
 from datetime import datetime
+from memory import memory
 
 class Logger:
     @staticmethod
@@ -9,3 +10,5 @@ class Logger:
         print(line)
         async with aiofiles.open("app.log", mode="a") as file:
             await file.write(line)
+            
+            

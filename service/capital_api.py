@@ -139,12 +139,12 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
     
    
    
-async def close_trade(self, epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
+async def close_trade(epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
     try:
         # Use PUT to close specific position
         response = await settings.session.delete(
             f"{settings.get_capital_host()}/api/v1/positions/{deal_id}",
-            headers= await self.get_auth_header()
+            headers= memory.capital_auth_header,
         )
         if response.status_code == 200:
             data = response.json()
@@ -161,7 +161,7 @@ async def close_trade(self, epic: str, size: float, deal_id: str, retry: int = 0
         await Logger.app_log(title=f"{epic}_CLOSE_TRADE_ERR", message=str(e))
         if retry < 3:
             await asyncio.sleep(30)
-            return await self.close_trade(epic, size, deal_id, retry + 1)
+            return await close_trade(epic, size, deal_id, retry + 1)
         return False
         
    
@@ -321,7 +321,9 @@ async def portfolio_balance():
         response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=header)
         if response.status_code == 200:
             data = response.json()
-            return data["accounts"]
+            portfolio = data["accounts"][0]
+            memory.portfolio = portfolio
+            return portfolio
     except Exception as e:
         await Logger.app_log(title="PORTFOLIO_ERR", message=str(e))
-        return {}
+        return memory.portfolio

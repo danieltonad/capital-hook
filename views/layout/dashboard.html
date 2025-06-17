@@ -10,15 +10,33 @@
 		/>
 		<link
 			rel="stylesheet"
-			href="{{ url_for('assets', path='css/style.css') }}"
+			href="{{ url_for('assets', path='css/styles.css') }}"
 		/>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-		<script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
 		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
 	</head>
 	<body>
-		WagwanB!
-		<hr />
-		{% block content %} {% endblock %}
+		<div class="container">
+      <nav>
+        <div class="navigation">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/config">Config</a></li>
+            <li><a href="/history">History</a></li>
+          </ul>
+          <label class="mode-toggle">
+            <span>Live</span>
+            <span>Demo</span>
+            <input type="checkbox" class="toggle-checkbox" />
+          </label>
+        </div>
+      </nav>
+
+      <main>
+        {% block content %}
+		{% endblock %}
+      </main>
+    </div>
+		<script src="{{ url_for('assets', path='js/main.js') }}"></script>
 	</body>
 </html>
