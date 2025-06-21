@@ -34,7 +34,7 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
     try:
         open_positions = await get_open_positions()
         for position in open_positions:
-            if position["epic"] == epic and float(position["size"]) == size and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
+            if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
                 return position["deal_id"]
         return None
     except Exception as e:
