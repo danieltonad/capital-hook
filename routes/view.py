@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from starlette.templating import Jinja2Templates, _TemplateResponse
 from memory import memory
+from utils import pnl_display
 
 
 view = APIRouter()
@@ -23,24 +24,12 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
             "deal_id": position,
             "epic": memory.positions[position].get("epic", "N/A"),
             "leverage": leverage,
-            "pnl": f"{symbol}{memory.positions[position].get('pnl', 0):,}",
+            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
             "direction": memory.positions[position].get("trade_direction", "N/A"),
             "size": memory.positions[position].get("trade_size", 0),
             "hook_name": memory.positions[position].get("hook_name", "N/A"),
             "date": memory.positions[position].get("entry_date", "N/A"),
         })
-
-    # dummy
-    # positions.append({
-    #     "deal_id": "position",
-    #     "epic": "N/A",
-    #     "leverage": "200:1",
-    #     "pnl": -12.3,
-    #     "direction": "BUY",
-    #     "size": 1.23,
-    #     "hook_name": "10/20 EMA",
-    #     "date":"19 May 13:11",
-    # })
 
     data = {
         "positions": positions,
@@ -67,7 +56,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
             "deal_id": position,
             "epic": memory.positions[position].get("epic", "N/A"),
             "leverage": leverage,
-            "pnl": f"{symbol}{memory.positions[position].get('pnl', 0)}",
+            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
             "direction": memory.positions[position].get("trade_direction", "N/A"),
             "size": memory.positions[position].get("trade_size", 0),
             "hook_name": memory.positions[position].get("hook_name", "N/A"),
@@ -91,7 +80,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
             "balance": f"{symbol}{portfolio.get('balance', 0):,}",
             "deposit": f"{symbol}{portfolio.get('deposit', 0):,}",
             "available": f"{symbol}{portfolio.get('available', 0):,}",
-            "pnl": f"{symbol}{portfolio.get('profitLoss', 0):,}",
+            "pnl": pnl_display(symbol=symbol, pnl=portfolio.get('profitLoss', 0)),
         }
     }
     return templates.TemplateResponse("components/portfolio.html", {"request": request, "data": data})

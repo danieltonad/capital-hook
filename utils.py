@@ -23,3 +23,8 @@ def round_trade_size(value):
 
     rounded = math.floor(value / rounding_base) * rounding_base
     return rounded
+
+
+def pnl_display(pnl: float, symbol: str ="#"):
+    formatted_pnl = f"+ {symbol}{pnl:,.2f}" if float(pnl) >= 0 else f"- {symbol}{abs(pnl):,.2f}"
+    return formatted_pnl if float(pnl) != 0.00 else f"{symbol}{pnl:,.2f}"

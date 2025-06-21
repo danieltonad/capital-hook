@@ -24,7 +24,7 @@ class Memory:
     
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str):
         if self.positions.get(deal_id, None):
-            self.positions[deal_id]["pnl"] = f"{pnl:,.2f}"
+            self.positions[deal_id]["pnl"] = pnl
             self.positions[deal_id]["trade_direction"] = trade_direction.value
             self.positions[deal_id]["epic"] = epic
             self.positions[deal_id]["trade_size"] = trade_size
@@ -34,7 +34,7 @@ class Memory:
         else:
             self.positions[deal_id] = {
                 "epic": epic,
-                "pnl": f"{pnl:,.2f}",
+                "pnl": pnl,
                 # "trade_direction": trade_direction.value,
                 # "trade_size": trade_size,
                 # "hook_name": hook_name,
