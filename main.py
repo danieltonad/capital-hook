@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
 from routes.view import view
-from database import settings, create_connection, migrate_db
+from database import settings, migrate_db
 from service.capital_socket import CapitalSocket
 from memory import memory
 from service.capital_api import get_account_preferences, update_markets,update_auth_header
@@ -17,8 +17,7 @@ app = FastAPI(
 async def startup_event():
     """
     Startup event handler
-    """
-    settings.DB_CONNECTION = await create_connection() # create DB connection
+    """# create DB connection
     await migrate_db() # migrate DB
     
     
@@ -47,8 +46,6 @@ async def shutdown_event():
     
     # close HTTP session
     await settings.session.aclose()
-    # capital socket initialization
-    settings.capital_socket_service = CapitalSocket()
 
 
 app.include_router(view, tags=["View"])
