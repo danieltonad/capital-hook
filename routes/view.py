@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from starlette.templating import Jinja2Templates, _TemplateResponse
 from memory import memory
-from utils import pnl_display
+from utils import pnl_display, entry_price_display
 
 
 view = APIRouter()
@@ -23,7 +23,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
         positions.append({
             "deal_id": position,
             "epic": memory.positions[position].get("epic", "N/A"),
-            "leverage": leverage,
+            "entry_price": entry_price_display(memory.positions[position].get("entry_price", 0.0)),
             "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
             "direction": memory.positions[position].get("trade_direction", "N/A"),
             "size": memory.positions[position].get("trade_size", 0),
@@ -55,7 +55,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
         positions.append({
             "deal_id": position,
             "epic": memory.positions[position].get("epic", "N/A"),
-            "leverage": leverage,
+            "entry_price": entry_price_display(memory.positions[position].get("entry_price", 0.0)),
             "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
             "direction": memory.positions[position].get("trade_direction", "N/A"),
             "size": memory.positions[position].get("trade_size", 0),

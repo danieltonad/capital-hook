@@ -28,3 +28,6 @@ def round_trade_size(value):
 def pnl_display(pnl: float, symbol: str ="#"):
     formatted_pnl = f"+ {symbol}{pnl:,.2f}" if float(pnl) >= 0 else f"- {symbol}{abs(pnl):,.2f}"
     return formatted_pnl if float(pnl) != 0.00 else f"{symbol}{pnl:,.2f}"
+
+def entry_price_display(entry_price: float):
+    return f"{entry_price:,.2f}"

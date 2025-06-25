@@ -22,24 +22,26 @@ class Memory:
         if len(self.console_data["msg"]) > 5:
             self.console_data["msg"].pop(0)
     
-    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str):
+    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str, entry_price: float):
         if self.positions.get(deal_id, None):
             self.positions[deal_id]["pnl"] = pnl
-            self.positions[deal_id]["trade_direction"] = trade_direction.value
-            self.positions[deal_id]["epic"] = epic
-            self.positions[deal_id]["trade_size"] = trade_size
-            self.positions[deal_id]["hook_name"] = hook_name
-            self.positions[deal_id]["entry_date"] = entry_date
+            # self.positions[deal_id]["trade_direction"] = trade_direction.value
+            # self.positions[deal_id]["epic"] = epic
+            # self.positions[deal_id]["trade_size"] = trade_size
+            # self.positions[deal_id]["hook_name"] = hook_name
+            # self.positions[deal_id]["entry_date"] = entry_date
+            # self.positions[deal_id]["entry_price"] = entry_price
             pass
         else:
             self.positions[deal_id] = {
                 "epic": epic,
                 "pnl": pnl,
-                # "trade_direction": trade_direction.value,
-                # "trade_size": trade_size,
-                # "hook_name": hook_name,
+                "trade_direction": trade_direction.value,
+                "trade_size": trade_size,
+                "hook_name": hook_name,
                 "exit_trade": False,
-                # "entry_date": entry_date,
+                "entry_date": entry_date,
+                "entry_price": entry_price,
             }
         
     def manual_close_position(self, deal_id: str):
@@ -52,7 +54,6 @@ class Memory:
         
         
     def remove_position(self, deal_id: str):
-        print("B4 => ",self.positions)
         if deal_id in self.positions:
             del self.positions[deal_id]
     
