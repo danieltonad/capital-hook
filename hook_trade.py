@@ -171,13 +171,14 @@ class HookedTradeExecution:
                 memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), hook_name=self.hook_name)
                 
                 if status:
+                    # remove position from memory
+                    memory.remove_position(self.deal_id)
+                    
                     await insert_trade_history(trade_id=self.deal_id, epic=self.epic, leverage=self.leverage, size=self.trade_size, pnl=profit_loss, pnl_percentage=percentage, direction=self.trade_direction.value, exit_type=self.exit_type.value, hook_name=self.hook_name.upper(), entry_price=self.entry_price, exit_price=self.exit_price, opened_at=self.opened_trade_at.strftime("%Y-%m-%d %H:%M:%S"), closed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     break
                 
                 await self.sleep_time()
             
-            # remove position from memory
-            memory.remove_position(self.deal_id)
             
         except Exception as err:
             await Logger.app_log(title=f"{self.hook_name.upper()}_ERR_[{self.epic}]", message=str(err))

@@ -52,6 +52,7 @@ class Memory:
         
         
     def remove_position(self, deal_id: str):
+        print("B4 => ",self.positions)
         if deal_id in self.positions:
             del self.positions[deal_id]
     
