@@ -1,4 +1,9 @@
 import math
+from datetime import datetime
+
+def datetime_format(dt_str):
+    dt = datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S')
+    return dt.strftime('%d %b %H:%M')
 
 def round_trade_size(value):
     """

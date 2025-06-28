@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from starlette.templating import Jinja2Templates, _TemplateResponse
 from memory import memory
 from utils import pnl_display, entry_price_display
+from database import get_trade_history
 
 
 view = APIRouter()
@@ -45,7 +46,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
 
 @view.get("/positions", tags=["Positions"])
-async def dashboard_view(request: Request) -> _TemplateResponse:
+async def position_view(request: Request) -> _TemplateResponse:
     positions = []
     
     for position in memory.positions.keys():
@@ -70,7 +71,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
 
 
 @view.get("/portfolio", tags=["Positions"])
-async def dashboard_view(request: Request) -> _TemplateResponse:
+async def portfolio_view(request: Request) -> _TemplateResponse:
     from service.capital_api import portfolio_balance
     data = await portfolio_balance()
     portfolio = data.get("balance", {})
@@ -86,6 +87,18 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     return templates.TemplateResponse("components/portfolio.html", {"request": request, "data": data})
 
 
+@view.get("/history", tags=["Trade History"])
+async def trade_history_view(request: Request) -> _TemplateResponse:
+    data = await get_trade_history()
+    trades = data.get("trades", [])
+    profits = data.get("profits", "0.00")
+    loasses = data.get("loasses", "0.00")
+    spreads = data.get("spreads", "0.00")
+    pnl = data.get("pnl", "0.00")
+    count = data.get("count", "0.00")
+    return templates.TemplateResponse("pages/history.html", {"request": request, "trades": trades, "profits": profits, "loasses": loasses, "spreads": spreads, "pnl": pnl, "count": count})
+
+
 
 @view.get("/config", tags=["Config"])
 async def dashboard_view(request: Request) -> _TemplateResponse:
@@ -93,10 +106,3 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
         "positions": {}
     }
     return templates.TemplateResponse("pages/config.html", {"request": request, "data": data})
-
-@view.get("/history", tags=["Trade History"])
-async def dashboard_view(request: Request) -> _TemplateResponse:
-    data = {
-        "positions": {}
-    }
-    return templates.TemplateResponse("pages/history.html", {"request": request, "data": data})

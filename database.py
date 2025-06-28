@@ -67,8 +67,56 @@ async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float
                     trade_id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, settings.TRADE_MODE.value
                 ))
         await db.commit()
-        
-        
+
+
+async def get_trade_history() -> list:
+    from utils import datetime_format
+    trades = []
+    profits = 0
+    loasses = 0
+    spreads = 0
+    pnl = 0.0
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with db.cursor() as cursor:
+            await cursor.execute("SELECT * FROM trades")
+            rows = await cursor.fetchall()
+            for row in rows:
+                id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode = row
+                if pnl > 0:
+                    profits += pnl
+                elif pnl < 0:
+                    loasses += abs(pnl)
+                else:
+                    spreads += abs(exit_price - entry_price) * size  # assuming spread is calculated as the difference between exit and entry price times size
+                trade = {
+                    "id": id,
+                    "epic": epic,
+                    "size": size,
+                    "pnl": f"{pnl:,.2f}",
+                    "pnl_percentage": f"{pnl_percentage:,.2f}%",
+                    "direction": direction,
+                    "exit_type": exit_type,
+                    "hook_name": hook_name,
+                    "entry_price": f"{entry_price:,}",
+                    "exit_price": f"{exit_price:,}",
+                    "opened_at": datetime_format(opened_at),
+                    "closed_at": datetime_format(closed_at),
+                    "mode": mode
+                }
+                trades.append(trade)
+            
+            pnl = profits - loasses - spreads
+            print(profits)
+            return {
+                "trades": trades,
+                "profits": f"+{profits:,.2f}",
+                "loasses": f"-{loasses:,.2f}",
+                "spreads": f"-{spreads:,.2f}",
+                "pnl": f"{pnl:,.2f}",
+                "count": len(trades)
+            }
+
+
 async def save_failed_hooks(hook_id: str, epic: str, hook_name: str, direction: str, error_message: str, created_at: str) -> None:
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
