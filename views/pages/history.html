@@ -3,12 +3,12 @@
 	<h1>History</h1>
 	<div class="history-summary">
 		<div class="history-cluster">
-			<div class="cluster">P <span>+2,390.34</span></div>
-			<div class="cluster">L <span>-1,990.34</span></div>
-			<div class="cluster">C <span>-43.12</span></div>
-			<div class="cluster">P&L <span>-43.12</span></div>
+			<div class="cluster">P <span>{{ profits }}</span></div>
+			<div class="cluster">L <span>{{ loasses }}</span></div>
+			<div class="cluster">C <span>{{ spreads }}</span></div>
+			<div class="cluster">P&L <span>{{ pnl }}</span></div>
 		</div>
-		<div class="trade-cluster">Trades: 432</div>
+		<div class="trade-cluster">Trades: {{ count }}</div>
 	</div>
 </div>
 <div class="platform-container-cover">
@@ -22,7 +22,6 @@
 							<th>Size</th>
 							<th>Direction</th>
 							<th>P&L</th>
-							<th>Leverage</th>
 							<th>opened</th>
 							<th>closed</th>
 							<th>Entry price</th>
@@ -32,279 +31,20 @@
 						</tr>
 					</thead>
 					<tbody>
+						{% for trade in trades %}
 						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
+							<td>{{ trade.epic }}</td>
+							<td>{{ trade.size }}</td>
+							<td>{{ trade.direction }}</td>
+							<td>{{ trade.pnl }}</td>
+							<td>{{ trade.opened_at }}</td>
+							<td>{{ trade.closed_at }}</td>
+							<td>{{ trade.entry_price }}</td>
+							<td>{{ trade.exit_price }}</td>
+							<td>{{ trade.exit_type }}</td>
+							<td>{{ trade.hook_name }}</td>
 						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
-						<tr>
-							<td>BTCUSD</td>
-							<td>0.023</td>
-							<td>BUY</td>
-							<td>23.4</td>
-							<td>20:1</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>12 May 2024 11:23:00</td>
-							<td>86,234.48</td>
-							<td>78,123.56</td>
-							<td>TP</td>
-							<td>MUGG</td>
-						</tr>
+						{% endfor %}
 					</tbody>
 				</table>
 			</div>

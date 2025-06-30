@@ -1,127 +1,91 @@
 {% extends "layout/dashboard.html" %} {% block content %}
+<div class="header-large">
+  <h1>Config</h1>
+</div>
 <div class="platform-container-cover">
-	<div class="header-large">
-		<h1>Config</h1>
-	</div>
-	<div class="platform-container">
-		<div class="content">
-			<!-- <div class="preferences">
-                <h2>Preference</h2>
-                <div class="form-group">
-                  <label for="tradeAmount">trade amount</label>
-                  <input type="text" id="tradeAmount" value="$ 125" />
-                </div>
-                <div class="form-group">
-                  <label>Indicies</label>
-                  <select>
-                    <option>200</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Currencies</label>
-                  <select>
-                    <option>200</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Commodities</label>
-                  <select>
-                    <option>20</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Cryptocurrencies</label>
-                  <select>
-                    <option>20</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Hedging mode</label>
-                  <input type="checkbox" id="hedgingMode" />
-                  <label for="hedgingMode"></label>
-                </div>
-              </div> -->
-			<form class="config-form" name="tradingConfigForm">
-				<div class="trade-setup">
-					<div class="form-group">
-						<label for="direction">direction</label>
-						<select id="direction" name="direction">
-							<option>BUY</option>
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="tradeAMount">Trade Amount</label>
-						<input
-							type="text"
-							id="tradeAMount"
-							name="tradeAMount"
-							value="$ 200"
-						/>
-					</div>
-					<div class="form-group">
-						<label for="takeProfit">take profit</label>
-						<input
-							type="text"
-							id="takeProfit"
-							name="takeProfit"
-							value="$ 200"
-						/>
-					</div>
-					<div class="form-group">
-						<label for="stopLoss">stop loss</label>
-						<input type="text" id="stopLoss" name="stopLoss" value="$ 35" />
-					</div>
-					<div class="form-group">
-						<label for="hookName">hook name</label>
-						<input type="text" id="hookName" name="hookName" value="HHOK-1" />
-					</div>
-					<div class="form-group checkbox-group">
-						<label>exit criteria</label>
-						<div class="checkbox-options">
-							<label>
-								<input
-									type="checkbox"
-									id="takeProfitExit"
-									name="takeProfitExit"
-									checked
-								/>
-								<span>
-									<i data-lucide="check"></i>
-								</span>
-								<label for="takeProfitExit">take profit</label>
-							</label>
-							<label>
-								<input
-									type="checkbox"
-									id="stopLossExit"
-									name="stopLossExit"
-									checked
-								/>
-								<span>
-									<i data-lucide="check"></i>
-								</span>
-								<label for="stopLossExit">stop loss</label>
-							</label>
-							<label>
-								<input
-									type="checkbox"
-									id="marketClosedExit"
-									name="marketClosedExit"
-								/>
-								<span>
-									<i data-lucide="check"></i>
-								</span>
-								<label for="marketClosedExit">market closed</label>
-							</label>
-						</div>
-					</div>
-				</div>
-				<button type="button">
-					<i data-lucide="copy"></i>
-					Copy Payload
-				</button>
-			</form>
-			<!-- <div class="payload">
+  <div class="platform-container">
+    <div class="content">
+      <form class="config-form" name="tradingConfigForm">
+        <div class="trade-setup">
+          <div class="form-group">
+            <label for="direction">direction</label>
+            <select id="direction" name="direction">
+              <option>BUY</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tradeAMount">Trade Amount</label>
+            <input
+              type="text"
+              id="tradeAMount"
+              name="tradeAMount"
+              value="$ 200"
+            />
+          </div>
+          <div class="form-group">
+            <label for="takeProfit">take profit</label>
+            <input
+              type="text"
+              id="takeProfit"
+              name="takeProfit"
+              value="$ 200"
+            />
+          </div>
+          <div class="form-group">
+            <label for="stopLoss">stop loss</label>
+            <input type="text" id="stopLoss" name="stopLoss" value="$ 35" />
+          </div>
+          <div class="form-group">
+            <label for="hookName">hook name</label>
+            <input type="text" id="hookName" name="hookName" value="HHOK-1" />
+          </div>
+          <div class="form-group checkbox-group">
+            <label>exit criteria</label>
+            <div class="checkbox-options">
+              <label>
+                <input
+                  type="checkbox"
+                  id="takeProfitExit"
+                  name="takeProfitExit"
+                  checked
+                />
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+                <label for="takeProfitExit">take profit</label>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  id="stopLossExit"
+                  name="stopLossExit"
+                  checked
+                />
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+                <label for="stopLossExit">stop loss</label>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  id="marketClosedExit"
+                  name="marketClosedExit"
+                />
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+                <label for="marketClosedExit">market closed</label>
+              </label>
+            </div>
+          </div>
+        </div>
+        <button type="button">
+          <i data-lucide="copy"></i>
+          Copy Payload
+        </button>
+      </form>
+      <!-- <div class="payload">
               <h2>Payload</h2>
               <div class="payload-content">
                 { "epic": "{{ticker}}", "timeframe": "{{interval}}", "profit":
@@ -129,7 +93,7 @@
               </div>
               <button>Copy</button>
             </div> -->
-		</div>
-	</div>
+    </div>
+  </div>
 </div>
 {% endblock %}

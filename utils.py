@@ -1,4 +1,9 @@
 import math
+from datetime import datetime
+
+def datetime_format(dt_str):
+    dt = datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S')
+    return dt.strftime('%d %b %H:%M')
 
 def round_trade_size(value):
     """
@@ -23,3 +28,11 @@ def round_trade_size(value):
 
     rounded = math.floor(value / rounding_base) * rounding_base
     return rounded
+
+
+def pnl_display(pnl: float, symbol: str ="#"):
+    formatted_pnl = f"+ {symbol}{pnl:,.2f}" if float(pnl) >= 0 else f"- {symbol}{abs(pnl):,.2f}"
+    return formatted_pnl if float(pnl) != 0.00 else f"{symbol}{pnl:,.2f}"
+
+def entry_price_display(entry_price: float):
+    return f"{entry_price:,.2f}"
