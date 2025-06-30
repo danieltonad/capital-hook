@@ -180,5 +180,6 @@ class HookedTradeExecution:
             
         except Exception as err:
             await capital_socket.unsubscribe_from_epic(self.epic)
+            memory.remove_trading_view_hooked_trades(self.epic, self.hook_name)
             await Logger.app_log(title=f"{self.hook_name.upper()}_ERR_[{self.epic}]", message=str(err))
 
