@@ -71,6 +71,7 @@ async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float
 
 async def get_trade_history() -> list:
     from utils import datetime_format
+    from memory import memory
     trades = []
     profits = 0
     loasses = 0
@@ -86,8 +87,7 @@ async def get_trade_history() -> list:
                     profits += pnl
                 elif pnl < 0:
                     loasses += abs(pnl)
-                else:
-                    spreads += abs(exit_price - entry_price) * size  # assuming spread is calculated as the difference between exit and entry price times size
+                spreads += abs(exit_price - entry_price) * (size / memory.get_leverage(epic))  # assuming spread is calculated as the difference between exit and entry price times size
                 trade = {
                     "id": id,
                     "epic": epic,
@@ -106,7 +106,6 @@ async def get_trade_history() -> list:
                 trades.append(trade)
             
             pnl = profits - loasses - spreads
-            print(profits)
             return {
                 "trades": trades,
                 "profits": f"+{profits:,.2f}",

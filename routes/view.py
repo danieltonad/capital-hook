@@ -42,7 +42,6 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
 
         }
     }
-    print(data["positions"])
     return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
 
 @view.get("/positions", tags=["Positions"])

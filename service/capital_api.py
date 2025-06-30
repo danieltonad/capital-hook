@@ -30,12 +30,18 @@ async def update_auth_header() -> None:
         return await update_auth_header()
         
         
-async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection) -> str:
+async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> str:
     try:
         open_positions = await get_open_positions()
         for position in open_positions:
             if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
                 return position["deal_id"]
+            
+        if retry < 5:
+            retry += 1
+            await asyncio.sleep(1)
+            return await get_epic_deal_id(epic, size, trade_direction, retry)
+
         return None
     except Exception as e:
         await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
