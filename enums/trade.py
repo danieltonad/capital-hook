@@ -12,6 +12,7 @@ class ExitType(Enum):
     SL = "SL"
     USER = "USER"
     MKT_CLOSED = "MKT_CLOSED"
+    STRATEGY = "STRATEGY"
     
 class TradeMode(Enum):
     DEMO = "DEMO"

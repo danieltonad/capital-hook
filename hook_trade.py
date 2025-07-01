@@ -137,6 +137,14 @@ class HookedTradeExecution:
             self.exit_type = ExitType.MKT_CLOSED
             await self.log_trade("closed")
             return True, profit_loss, percentage
+        
+        # strategy switch
+        elif ExitType.STRATEGY in self.exit_criteria and memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name) != self.trade_direction:
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            self.exit_type = ExitType.STRATEGY
+            await self.log_trade("closed")
+            return True, profit_loss, percentage
+
             
         
         elif memory.manual_trade_exit_signal(self.deal_id):
