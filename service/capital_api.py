@@ -303,7 +303,6 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
             if not day_hours:
                 return True   # never opens today
 
-            current_hm = now_utc.strftime("%H:%M")
             for rng in day_hours:
                 start_str, end_str = rng.split(" - ")
                 start_hour, start_min = map(int, start_str.split(":"))
