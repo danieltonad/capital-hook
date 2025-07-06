@@ -293,29 +293,37 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
             hours = memory.trading_hours.get(epic, {})
             if not hours:
                 hours = memory.trading_hours = await get_epic_hours(epic)
+            print(hours)
             
             # print("Hours => ", hours)
-            now = datetime.utcnow()
-            day_key = now.strftime("%a").lower()
+            now_utc = datetime.utcnow()
+            day_key = now_utc.strftime("%a").lower()
             day_hours = hours.get(day_key, [])
 
             if not day_hours:
                 return True   # never opens today
 
-            current_hm = now.strftime("%H:%M")
+            current_hm = now_utc.strftime("%H:%M")
             for rng in day_hours:
-                start, end = rng.split(" - ")
+                start_str, end_str = rng.split(" - ")
+                start_hour, start_min = map(int, start_str.split(":"))
+                end_hour, end_min = map(int, end_str.split(":"))
                 # print("Start => ", start, "End => ", end)
-                if start <= current_hm <= end:
-                    end_hour, end_min = map(int, end.split(":"))
-                    end_time = now.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
-                    print(end_hour, end_min, end_time)
-                    if end_time < now:  # handles “cross-midnight”
-                        end_time += timedelta(days=1)
-                    return (end_time - now).total_seconds() / 60 <= min
+
+                start_time_today = now_utc.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
+                end_time_today = now_utc.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+
+                if end_time_today < start_time_today:
+                    end_time_today += timedelta(days=1)
+
+                if start_time_today <= now_utc < end_time_today:
+                    # Market is currently open. Now check if it's closing soon.
+                    time_remaining_minutes = (end_time_today - now_utc).total_seconds() / 60
+                    print("HERE", time_remaining_minutes)
+                    return time_remaining_minutes <= min
             
             # market closed
-            return False
+            return True
 
         except Exception as e:
             return False

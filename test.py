@@ -12,7 +12,7 @@ async def play_book():
     # epic = "US500" #memory.epics[347]
     # instrument = memory.instruments[epic]
     # print(epic, instrument)
-    print(await is_market_closed("BTCUSD"))
+    print(await is_market_closed("BTCUSD", 5))
     
     
     
