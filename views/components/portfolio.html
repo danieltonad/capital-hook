@@ -12,5 +12,5 @@
 </div>
 <div class="stat-box">
 	<div class="label">PnL</div>
-	<div class="value">{{data.portfolio.pnl}}</div>
+	<div class="value" id="{% if '-' in data.portfolio.pnl|string %}loss{% else %}profit{% endif %}">{{data.portfolio.pnl}}</div>
 </div>

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from service.capital_api import set_account_preferences, portfolio_balance, memory
-from model import AccountPreferenceModel, HookPayloadModel
+from service.capital_api import portfolio_balance, memory
+from model import HookPayloadModel, TradeModeModel
 
 
 api = APIRouter()
@@ -49,10 +49,20 @@ async def get_preference():
     
 
 @api.delete("/trade/{deal_id}")
-async def manual_close_trade(request: Request, deal_id: str):
+async def manual_close_trade(deal_id: str):
     memory.manual_close_position(deal_id)
-    
-    
+
+
+@api.post("/mode")
+async def update_trade_mode(data: TradeModeModel):
+    from settings import settings
+    settings.update_trade_mode(data.mode)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": f"Trade mode updated, [{settings.TRADE_MODE.value}]!"}
+    )
+
+
 @api.post("/generate-payload")
 async def generate_payload(data: HookPayloadModel):
     """
