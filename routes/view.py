@@ -109,6 +109,25 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
     })
 
 
+@view.get("/history/data")
+async def trade_history_view(request: Request) -> _TemplateResponse:
+    data = await get_trade_history()
+    trades = data.get("trades", [])
+    profits = data.get("profits", "0.00")
+    loasses = data.get("loasses", "0.00")
+    spreads = data.get("spreads", "0.00")
+    pnl = data.get("pnl", "0.00")
+    count = data.get("count", "0.00")
+    return templates.TemplateResponse("components/history.html", {
+        "request": request,
+        "trades": trades,
+        "profits": profits, 
+        "loasses": loasses, 
+        "spreads": spreads, 
+        "pnl": pnl, 
+        "count": count
+    })
+
 
 
 @view.get("/config", tags=["Config"])

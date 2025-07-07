@@ -79,7 +79,10 @@ async def get_trade_history() -> list:
     pnl = 0.0
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
-            await cursor.execute("SELECT * FROM trades WHERE mode = ?", (settings.TRADE_MODE.value,))
+            await cursor.execute(
+                "SELECT * FROM trades WHERE mode = ? ORDER BY closed_at DESC",
+                (settings.TRADE_MODE.value,)
+            )
             rows = await cursor.fetchall()
             for row in rows:
                 id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode = row
