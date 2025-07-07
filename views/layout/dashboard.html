@@ -27,7 +27,11 @@
           <label class="mode-toggle">
             <span>Live</span>
             <span>Demo</span>
-            <input type="checkbox" class="toggle-checkbox" />
+            <input 
+            {% if mode == 'DEMO' %} checked {% endif %}
+              type="checkbox" 
+              class="toggle-checkbox" 
+            />
           </label>
         </div>
       </nav>

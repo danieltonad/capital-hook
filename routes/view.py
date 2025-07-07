@@ -3,6 +3,7 @@ from starlette.templating import Jinja2Templates, _TemplateResponse
 from memory import memory
 from utils import pnl_display, entry_price_display
 from database import get_trade_history
+from settings import settings
 
 
 view = APIRouter()
@@ -42,7 +43,7 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
 
         }
     }
-    return templates.TemplateResponse("pages/index.html", {"request": request, "data": data})
+    return templates.TemplateResponse("pages/index.html", {"request": request, "data": data, "mode": settings.TRADE_MODE.value,})
 
 @view.get("/positions", tags=["Positions"])
 async def position_view(request: Request) -> _TemplateResponse:
@@ -81,7 +82,8 @@ async def portfolio_view(request: Request) -> _TemplateResponse:
             "deposit": f"{symbol}{portfolio.get('deposit', 0):,}",
             "available": f"{symbol}{portfolio.get('available', 0):,}",
             "pnl": pnl_display(symbol=symbol, pnl=portfolio.get('profitLoss', 0)),
-        }
+        },
+        "mode": settings.TRADE_MODE.value,
     }
     return templates.TemplateResponse("components/portfolio.html", {"request": request, "data": data})
 
@@ -95,7 +97,17 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
     spreads = data.get("spreads", "0.00")
     pnl = data.get("pnl", "0.00")
     count = data.get("count", "0.00")
-    return templates.TemplateResponse("pages/history.html", {"request": request, "trades": trades, "profits": profits, "loasses": loasses, "spreads": spreads, "pnl": pnl, "count": count})
+    return templates.TemplateResponse("pages/history.html", {
+        "request": request, 
+        "trades": trades, 
+        "profits": profits, 
+        "loasses": loasses, 
+        "spreads": spreads, 
+        "pnl": pnl, 
+        "count": count,
+        "mode": settings.TRADE_MODE.value,
+    })
+
 
 
 
@@ -104,4 +116,4 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     data = {
         "positions": {}
     }
-    return templates.TemplateResponse("pages/config.html", {"request": request, "data": data})
+    return templates.TemplateResponse("pages/config.html", {"request": request, "data": data, "mode": settings.TRADE_MODE.value})
