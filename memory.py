@@ -1,9 +1,10 @@
 from enums.trade import TradeDirection, TradeInstrument
 from typing import Dict
+from settings import settings, TradeMode
 
 
 class Memory:
-    positions: dict = {}
+    positions: dict = {TradeMode.DEMO.value: {}, TradeMode.LIVE.value: {}}
     deal_ids: set = set()
     capital_auth_header: dict = {}
     epics: list = []
@@ -12,28 +13,20 @@ class Memory:
     market_data: dict = {}
     preferences: dict = {}
     hooked_trades: Dict[str, TradeDirection] = {}
-    console_data: dict = {"msg": []}
     portfolio: dict = {}
 
-        
-    def update_console_data_msg(self, msg: str):
-        """Update the console data message."""
-        self.console_data["msg"].append(msg)
-        if len(self.console_data["msg"]) > 5:
-            self.console_data["msg"].pop(0)
+
+    def get_trade_mode_for_deal_id(self, deal_id: str) -> TradeMode | None:
+        for mode in [TradeMode.DEMO, TradeMode.LIVE]:
+            if deal_id in self.positions[mode.value]:
+                return mode.value
+        return None
     
     def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str, entry_price: float):
-        if self.positions.get(deal_id, None):
-            self.positions[deal_id]["pnl"] = pnl
-            # self.positions[deal_id]["trade_direction"] = trade_direction.value
-            # self.positions[deal_id]["epic"] = epic
-            # self.positions[deal_id]["trade_size"] = trade_size
-            # self.positions[deal_id]["hook_name"] = hook_name
-            # self.positions[deal_id]["entry_date"] = entry_date
-            # self.positions[deal_id]["entry_price"] = entry_price
-            pass
-        else:
-            self.positions[deal_id] = {
+        """Update or add positions."""
+        mode = settings.TRADE_MODE.value
+        if not self.get_trade_mode_for_deal_id(deal_id):
+            self.positions[mode][deal_id] = {
                 "epic": epic,
                 "pnl": pnl,
                 "trade_direction": trade_direction.value,
@@ -43,32 +36,40 @@ class Memory:
                 "entry_date": entry_date,
                 "entry_price": entry_price,
             }
+        else:
+            self.positions[self.get_trade_mode_for_deal_id(deal_id)][deal_id]["pnl"] = pnl
         
     def manual_close_position(self, deal_id: str):
-        if deal_id in self.positions:
-            self.positions[deal_id]["exit_trade"] = True
-    
+        """Mark a position as closed manually by setting exit_trade to True."""
+        if deal_id in self.positions[settings.TRADE_MODE.value]:
+            self.positions[settings.TRADE_MODE.value][deal_id]["exit_trade"] = True
+
     def manual_trade_exit_signal(self, deal_id: str) -> bool:
         """Check if a trade exit signal is set for a given deal_id."""
-        return self.positions.get(deal_id, {}).get("exit_trade", False)
-        
-        
+        return self.positions[settings.TRADE_MODE.value].get(deal_id, {}).get("exit_trade", False)
+
+
     def remove_position(self, deal_id: str):
-        if deal_id in self.positions:
-            del self.positions[deal_id]
-    
-    
+        """Remove a position from the positions dictionary."""
+        if deal_id in self.positions[self.get_trade_mode_for_deal_id(deal_id)]:
+            del self.positions[self.get_trade_mode_for_deal_id(deal_id)][deal_id]
+
+
     def update_deal_id(self, deal_id: str):
+        """Add a deal_id to the set of deal_ids."""
         self.deal_ids.add(deal_id)
     
     def remove_deal_id(self, deal_id: str):
+        """Remove a deal_id from the set of deal_ids."""
         if deal_id in self.deal_ids:
             self.deal_ids.remove(deal_id)
             
     def update_capital_auth_header(self, header: dict):
+        """Update the authorization header for Capital API."""
         self.capital_auth_header = header
     
     def update_epics(self, epics: list, instruments: dict):
+        """Update the list of epics and their corresponding instruments."""
         self.epics = epics
         self.instruments = instruments
         
@@ -97,9 +98,11 @@ class Memory:
         return TradeInstrument(self.instruments.get(epic, ""))
     
     def update_trading_view_hooked_trades(self, epic: str, direction: TradeDirection, hook_name: str):
+        """Update or add a hooked trade for a specific epic and hook name."""
         self.hooked_trades[f"{epic}_{hook_name}"] = direction
     
     def remove_trading_view_hooked_trades(self, epic: str, hook_name: str):
+        """Remove a hooked trade for a specific epic and hook name."""
         del self.hooked_trades[f"{epic}_{hook_name}"]
     
     def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:

@@ -1,7 +1,6 @@
 import asyncio, json
-from settings import settings
 from enums.trade import TradeDirection
-from memory import memory
+from memory import memory, settings
 from logger import Logger
 from datetime import datetime, timedelta
 

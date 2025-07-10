@@ -1,5 +1,5 @@
 import aiosqlite
-from settings import settings
+from memory import memory, settings
 from enums.trade import TradeMode
 
 async def create_connection() -> aiosqlite.Connection:
@@ -71,7 +71,6 @@ async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float
 
 async def get_trade_history() -> list:
     from utils import datetime_format
-    from memory import memory
     trades = []
     profits = 0
     loasses = 0

@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Request
 from starlette.templating import Jinja2Templates, _TemplateResponse
-from memory import memory
+from memory import memory, settings
 from utils import pnl_display, entry_price_display
 from database import get_trade_history
-from settings import settings
 
 
 view = APIRouter()
@@ -19,18 +18,16 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
     symbol = data.get("symbol", "#")
     positions = []
     
-    for position in memory.positions.keys():
-        leverage = memory.get_leverage(memory.positions[position].get("epic", ""))
-        leverage = f"{leverage}:1"
+    for position in memory.positions[settings.TRADE_MODE.value].keys():
         positions.append({
             "deal_id": position,
-            "epic": memory.positions[position].get("epic", "N/A"),
-            "entry_price": entry_price_display(memory.positions[position].get("entry_price", 0.0)),
-            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
-            "direction": memory.positions[position].get("trade_direction", "N/A"),
-            "size": memory.positions[position].get("trade_size", 0),
-            "hook_name": memory.positions[position].get("hook_name", "N/A"),
-            "date": memory.positions[position].get("entry_date", "N/A"),
+            "epic": memory.positions[settings.TRADE_MODE.value][position].get("epic", "N/A"),
+            "entry_price": entry_price_display(memory.positions[settings.TRADE_MODE.value][position].get("entry_price", 0.0)),
+            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[settings.TRADE_MODE.value][position].get('pnl', 0)),
+            "direction": memory.positions[settings.TRADE_MODE.value][position].get("trade_direction", "N/A"),
+            "size": memory.positions[settings.TRADE_MODE.value][position].get("trade_size", 0),
+            "hook_name": memory.positions[settings.TRADE_MODE.value][position].get("hook_name", "N/A"),
+            "date": memory.positions[settings.TRADE_MODE.value][position].get("entry_date", "N/A"),
         })
 
     data = {
@@ -48,20 +45,18 @@ async def dashboard_view(request: Request) -> _TemplateResponse:
 @view.get("/positions", tags=["Positions"])
 async def position_view(request: Request) -> _TemplateResponse:
     positions = []
-    
-    for position in memory.positions.keys():
-        leverage = memory.get_leverage(memory.positions[position].get("epic", ""))
-        leverage = f"{leverage}:1"
+
+    for position in memory.positions[settings.TRADE_MODE.value].keys():
         symbol = memory.portfolio.get("symbol", "#")
         positions.append({
             "deal_id": position,
-            "epic": memory.positions[position].get("epic", "N/A"),
-            "entry_price": entry_price_display(memory.positions[position].get("entry_price", 0.0)),
-            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[position].get('pnl', 0)),
-            "direction": memory.positions[position].get("trade_direction", "N/A"),
-            "size": memory.positions[position].get("trade_size", 0),
-            "hook_name": memory.positions[position].get("hook_name", "N/A"),
-            "date": memory.positions[position].get("entry_date", "N/A"),
+            "epic": memory.positions[settings.TRADE_MODE.value][position].get("epic", "N/A"),
+            "entry_price": entry_price_display(memory.positions[settings.TRADE_MODE.value][position].get("entry_price", 0.0)),
+            "pnl": pnl_display(symbol=symbol, pnl=memory.positions[settings.TRADE_MODE.value][position].get('pnl', 0)),
+            "direction": memory.positions[settings.TRADE_MODE.value][position].get("trade_direction", "N/A"),
+            "size": memory.positions[settings.TRADE_MODE.value][position].get("trade_size", 0),
+            "hook_name": memory.positions[settings.TRADE_MODE.value][position].get("hook_name", "N/A"),
+            "date": memory.positions[settings.TRADE_MODE.value][position].get("entry_date", "N/A"),
         })
 
     data = {
