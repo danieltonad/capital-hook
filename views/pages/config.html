@@ -5,7 +5,15 @@
 <div class="platform-container-cover">
   <div class="platform-container">
     <div class="content">
-      <form class="config-form" name="tradingConfigForm">
+      <form
+        class="config-form"
+        name="tradingConfigForm"
+        hx-post="/api/generate-payload"
+        hx-trigger="click from:#genPayload"
+        hx-target="#payload-response"
+        hx-ext="json-enc"
+        hx-swap="innerHTML"
+      >
         <div class="trade-setup">
           <div class="form-group">
             <label for="direction">direction</label>
@@ -15,30 +23,20 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="tradeAMount">Trade Amount</label>
-            <input
-              type="text"
-              id="tradeAMount"
-              name="tradeAMount"
-              value="$ "
-            />
+            <label for="tradeAmount">Trade Amount</label>
+            <input type="number" id="tradeAmount" name="trade_amount" required />
           </div>
           <div class="form-group">
             <label for="takeProfit">take profit</label>
-            <input
-              type="text"
-              id="takeProfit"
-              name="takeProfit"
-              value=""
-            />
+            <input type="number" id="takeProfit" name="take_profit" required />
           </div>
           <div class="form-group">
             <label for="stopLoss">stop loss</label>
-            <input type="text" id="stopLoss" name="stopLoss" value="$ 35" />
+            <input type="number" id="stopLoss" name="stop_loss" required />
           </div>
           <div class="form-group">
             <label for="hookName">hook name</label>
-            <input type="text" id="hookName" name="hookName" value="HHOK-1" />
+            <input type="text" id="hookName" name="hook_name" required />
           </div>
           <div class="form-group checkbox-group">
             <label>exit criteria</label>
@@ -47,8 +45,7 @@
                 <input
                   type="checkbox"
                   id="takeProfitExit"
-                  name="takeProfitExit"
-                  checked
+                  name="take_profit_exit"
                 />
                 <span>
                   <i data-lucide="check"></i>
@@ -60,8 +57,7 @@
                 <input
                   type="checkbox"
                   id="stopLossExit"
-                  name="stopLossExit"
-                  checked
+                  name="stop_loss_exit"
                 />
                 <span>
                   <i data-lucide="check"></i>
@@ -73,8 +69,7 @@
                 <input
                   type="checkbox"
                   id="strategyExit"
-                  name="strategyExit"
-                  checked
+                  name="strategy_exit"
                 />
                 <span>
                   <i data-lucide="check"></i>
@@ -86,7 +81,7 @@
                 <input
                   type="checkbox"
                   id="marketClosedExit"
-                  name="marketClosedExit"
+                  name="market_close_exit"
                 />
                 <span>
                   <i data-lucide="check"></i>
@@ -96,11 +91,14 @@
             </div>
           </div>
         </div>
-        <button type="button">
+        <button id="genPayload" type="button">
           <i data-lucide="copy"></i>
           Copy Payload
         </button>
       </form>
+
+      <div id="payload-response"></div>
+
       <!-- <div class="payload">
               <h2>Payload</h2>
               <div class="payload-content">

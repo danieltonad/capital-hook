@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from service.capital_api import portfolio_balance, memory
-from model import HookPayloadModel, TradeModeModel
+from model import HookPayloadModel, TradeModeModel, ExitType
 
 
 api = APIRouter()
@@ -66,10 +66,26 @@ async def update_trade_mode(data: TradeModeModel):
 @api.post("/generate-payload")
 async def generate_payload(data: HookPayloadModel):
     """
-    Generate a payload for a trade.
+    Generate tradingview webhook payload.
     """
+    mapping = {
+        'take_profit_exit': ExitType.TP.value,
+        'stop_loss_exit': ExitType.SL.value,
+        'strategy_exit': ExitType.STRATEGY.value,
+        'market_close_exit': ExitType.MKT_CLOSED.value
+    }
     
-    payload = ""
+    payload = {
+        "epic": "{{ticker}}",
+        "direction": data.direction.value,
+        "amount": data.trade_amount,
+        "hook_name": data.hook_name.upper(),
+        "profit": data.take_profit,
+        "loss": data.stop_loss,
+        "exit_criteria": [
+        v for k, v in mapping.items() if getattr(data, k, None) == 'on'
+    ]
+    }
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content=payload

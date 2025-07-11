@@ -12,16 +12,19 @@ class TradingViewWebhookModel(BaseModel):
     profit: Annotated[int, conint(ge=5)] 
     loss: Annotated[int, conint(ge=5)] 
     exit_criteria: List[ExitType]
-    
+
+
 
 class HookPayloadModel(BaseModel):
-    epic: str
     hook_name: str
     direction: TradeDirection
     trade_amount: Annotated[float, conint(gt=10)]
-    stop_loss: Annotated[float, conint(gt=0)]
-    take_profit: Annotated[float, conint(gt=0)]
-    exit_criteria: List[ExitType]
+    stop_loss: Annotated[float, conint(gt=10)]
+    take_profit: Annotated[float, conint(gt=10)]
+    take_profit_exit: Optional[Literal['on']] = None
+    stop_loss_exit: Optional[Literal['on']] = None
+    strategy_exit: Optional[Literal['on']] = None
+    market_close_exit: Optional[Literal['on']] = None
     
 
 class TradeModeModel(BaseModel):

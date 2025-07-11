@@ -457,6 +457,7 @@ thead {
   text-transform: capitalize;
 }
 .config-form .form-group input[type="text"],
+.config-form .form-group input[type="number"],
 .config-form .form-group input[type="email"],
 .config-form .form-group select {
   padding: 10px;
@@ -467,6 +468,7 @@ thead {
 }
 .config-form .form-group input[type="text"]:focus,
 .config-form .form-group input[type="email"]:focus,
+.config-form .form-group input[type="number"]:focus,
 .config-form .form-group select:focus {
   outline: 1.5px solid var(--color-text-muted);
 }
