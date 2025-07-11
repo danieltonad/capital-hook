@@ -13,6 +13,10 @@
         hx-target="#payload-response"
         hx-ext="json-enc"
         hx-swap="innerHTML"
+        hx-on="htmx:afterSwap: 
+        navigator.clipboard.writeText(
+          document.querySelector('#payload-response').innerText
+        )"
       >
         <div class="trade-setup">
           <div class="form-group">
