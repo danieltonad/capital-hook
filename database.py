@@ -1,13 +1,14 @@
 import aiosqlite
-from memory import memory, settings
 from enums.trade import TradeMode
 
 async def create_connection() -> aiosqlite.Connection:
+    from memory import settings
     return await aiosqlite.connect(settings.DB_PATH)
 
 
 # migrate database
 async def migrate_db() -> None:
+    from memory import settings
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
             # trades table
@@ -57,6 +58,7 @@ async def migrate_db() -> None:
         
         
 async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str) -> None:
+    from memory import settings
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
             await cursor.execute(
@@ -70,6 +72,7 @@ async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float
 
 
 async def get_trade_history() -> list:
+    from memory import memory, settings
     from utils import datetime_format
     trades = []
     profits = 0
@@ -116,9 +119,50 @@ async def get_trade_history() -> list:
                 "pnl": f"{pnl:,.2f}",
                 "count": len(trades)
             }
+        
+
+async def update_trade_mode_db(mode: TradeMode) -> None:
+    from memory import settings
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with db.cursor() as cursor:
+            # Check if a config row exists
+            await cursor.execute("SELECT id FROM bot_config ORDER BY id DESC LIMIT 1")
+            row = await cursor.fetchone()
+            if row:
+                # Update the latest config
+                await cursor.execute(
+                    """
+                    UPDATE bot_config
+                    SET trade_mode = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    """, (mode.value, row[0])
+                )
+            else:
+                # Insert new config
+                await cursor.execute(
+                    """
+                    INSERT INTO bot_config (trade_mode, created_at, updated_at)
+                    VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    """, (mode.value,)
+                )
+        await db.commit()
+
+async def get_trade_mode() -> TradeMode:
+    from memory import settings
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with db.cursor() as cursor:
+            await cursor.execute(
+                "SELECT trade_mode FROM bot_config ORDER BY id DESC LIMIT 1"
+            )
+            row = await cursor.fetchone()
+            if row:
+                return TradeMode(row[0])
+            else:
+                return TradeMode.DEMO
 
 
 async def save_failed_hooks(hook_id: str, epic: str, hook_name: str, direction: str, error_message: str, created_at: str) -> None:
+    from memory import settings
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
             await cursor.execute(
@@ -128,4 +172,12 @@ async def save_failed_hooks(hook_id: str, epic: str, hook_name: str, direction: 
             """, (
                 hook_id, epic, hook_name, direction, error_message, created_at
             ))
+        await db.commit()
+
+
+async def clear_config() -> None:
+    from memory import settings
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with db.cursor() as cursor:
+            await cursor.execute("DELETE FROM bot_config")
         await db.commit()

@@ -32,14 +32,17 @@ class Settings:
     session: AsyncClient = AsyncClient() # HTTP session initialization
     
     capital_socket_service = None # capital socket initialization
-    
-    def __init__(self):
-        self.TRADE_MODE = TradeMode.DEMO
-    
-    
-    def update_trade_mode(self, trade_mode: TradeMode):
+
+    async def sync_trade_mode(self):
+        from database import get_trade_mode
+        self.TRADE_MODE = await get_trade_mode()
+
+
+    async def update_trade_mode(self, trade_mode: TradeMode):
+        from database import update_trade_mode_db
         self.TRADE_MODE = trade_mode
-    
+        await update_trade_mode_db(trade_mode)
+
     def get_capital_host(self) -> str:
         return self.CAPITAL_HOST_LIVE if self.TRADE_MODE == TradeMode.LIVE else self.CAPITAL_HOST_DEMO
     

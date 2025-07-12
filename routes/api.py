@@ -56,7 +56,7 @@ async def manual_close_trade(deal_id: str):
 @api.post("/mode")
 async def update_trade_mode(data: TradeModeModel):
     from settings import settings
-    settings.update_trade_mode(data.mode)
+    await settings.update_trade_mode(data.mode)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={"message": f"Trade mode updated, [{settings.TRADE_MODE.value}]!"}
@@ -74,7 +74,7 @@ async def generate_payload(data: HookPayloadModel):
         'strategy_exit': ExitType.STRATEGY.value,
         'market_close_exit': ExitType.MKT_CLOSED.value
     }
-    
+
     payload = {
         "epic": "{{ticker}}",
         "direction": data.direction.value,
