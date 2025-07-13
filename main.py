@@ -3,7 +3,6 @@ from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
 from routes.view import view
-from service.capital_socket import CapitalSocket
 from memory import memory, settings
 from service.capital_api import get_account_preferences, update_markets,update_auth_header
 from job import jobs
