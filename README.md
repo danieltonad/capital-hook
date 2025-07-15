@@ -8,22 +8,24 @@ Capital Hook is a powerful, self-hosted FastAPI application designed for algorit
 
 ## 🗒️ Table of Contents
 
-- [Features](#✨-features)
-- [⚠️ Known Limitations](#️⚠️-known-limitations)
-- [🛠️ Tech Stack](#🛠️-tech-stack)
-- [Installation & Environment Setup](#installation--environment-setup)
-  - [Prerequisites](#prerequisites)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Set Up a Virtual Environment (Recommended)](#2-set-up-a-virtual-environment-recommended)
-  - [3. Install Dependencies](#3-install-dependencies)
-  - [4. Configure Capital.com API Credentials](#4-configure-capitalcom-api-credentials)
-- [⚙️ Usage Guide](#️⚙️-usage-guide)
-  - [Running the Application](#running-the-application)
-- [Accessing the Dashboard & Config Page](#accessing-the-dashboard--config-page)
-- [Viewing Real-Time Trade History](#viewing-real-time-trade-history)
-  - [Configuring TradingView Webhooks](#configuring-tradingview-webhooks)
-- [🤝 Contributing](#🤝-contributing)
-- [📄 License](#📄-license)
+* [✨ Features](#features)
+* [⚠️ Known Limitations](#known-limitations)
+* [🛠️ Tech Stack](#tech-stack)
+* [🚀 Installation & Environment Setup](#installation--environment-setup)
+    * [Prerequisites](#prerequisites)
+    * [1. Clone the Repository](#1-clone-the-repository)
+    * [2. Set Up a Virtual Environment (Recommended)](#2-set-up-a-virtual-environment-recommended)
+    * [3. Install Dependencies](#3-install-dependencies)
+    * [4. Configure Capital.com API Credentials](#4-configure-capitalcom-api-credentials)
+* [⚙️ Usage Guide](#usage-guide)
+    * [Running the Application](#running-the-application)
+    * [Accessing the Dashboard & Config Page](#accessing-the-dashboard--config-page)
+    * [Viewing Real-Time Trade History](#viewing-real-time-trade-history)
+    * [Configuring TradingView Webhooks](#configuring-tradingview-webhooks)
+        * [Create a TradingView Alert](#create-a-tradingview-alert)
+* [🤝 Contributing](#contributing)
+* [📄 License](#license)
+
 
 ---
 
