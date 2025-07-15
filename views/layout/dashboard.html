@@ -10,7 +10,7 @@
 		/>
 		<link
 			rel="stylesheet"
-			href="{{ url_for('assets', path='css/styles.css') }}"
+			href="{{ request.url_for('assets', path='css/styles.css') }}"
 		/>
     <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
 		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
@@ -47,6 +47,6 @@
         Cpioed to clipboard
       </div>
     </div>
-		<script src="{{ url_for('assets', path='js/main.js') }}"></script>
+		<script src="{{ request.url_for('assets', path='js/main.js') }}"></script>
 	</body>
 </html>
