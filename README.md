@@ -8,10 +8,10 @@ Capital Hook is a powerful, self-hosted FastAPI application designed for algorit
 
 ## 🗒️ Table of Contents
 
-- [✨ Features](#-✨features)
+- [Features](#✨-features)
 - [⚠️ Known Limitations](#️⚠️-known-limitations)
 - [🛠️ Tech Stack](#🛠️-tech-stack)
-- [🚀 Installation & Environment Setup](#🚀-installation--environment-setup)
+- [Installation & Environment Setup](#installation--environment-setup)
   - [Prerequisites](#prerequisites)
   - [1. Clone the Repository](#1-clone-the-repository)
   - [2. Set Up a Virtual Environment (Recommended)](#2-set-up-a-virtual-environment-recommended)
