@@ -4,7 +4,7 @@ from logger import Logger
 from service.capital_api import open_trade, close_trade, is_market_closed
 from datetime import datetime
 from database import insert_trade_history
-from enums.trade import TradeInstrument
+from enums.trade import TradeInstrument, TradeMode
 from service.capital_socket import capital_socket, memory
 from utils import round_trade_size
 from typing import List
@@ -27,9 +27,11 @@ class HookedTradeExecution:
     target_profit_price: float
     exit_type: ExitType
     opened_trade_at: datetime
+    position_mode: TradeMode
     
     
     def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType]):
+        from settings import settings
         self.trade_direction = trade_direction
         self.epic = epic
         self.trade_amount = trade_amount
@@ -40,6 +42,7 @@ class HookedTradeExecution:
         self.exit_criteria = exit_criteria
         self.leverage = memory.get_leverage(epic)
         self.trade_instrument = memory.get_trade_instrument(epic)
+        self.position_mode = settings.TRADE_MODE
         
     
     def __log_trade_position(self, profit_loss, percentage):
@@ -105,28 +108,28 @@ class HookedTradeExecution:
         
         # reward monitor long
         if ExitType.TP in self.exit_criteria and current_price >= self.target_profit_price and self.trade_direction == TradeDirection.BUY:
-            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.TP
             await self.log_trade("closed")
             return True, profit_loss, percentage
         
         # risk monitor long
         elif ExitType.SL in self.exit_criteria and current_price <= self.stop_loss_price and self.trade_direction == TradeDirection.BUY:
-                await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+                await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
                 self.exit_type = ExitType.SL
                 await self.log_trade("closed")
                 return True, profit_loss, percentage
             
         # reward monitor short
         elif ExitType.TP in self.exit_criteria and current_price <= self.target_profit_price and self.trade_direction == TradeDirection.SELL:
-            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.TP
             self.log_trade("closed")
             return True, profit_loss, percentage
         
         # risk monitor short
         elif ExitType.SL in self.exit_criteria and current_price >= self.stop_loss_price and self.trade_direction == TradeDirection.SELL:
-            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.SL
             await self.log_trade("closed")
             return True, profit_loss, percentage
@@ -140,7 +143,7 @@ class HookedTradeExecution:
         
         # strategy switch
         elif ExitType.STRATEGY in self.exit_criteria and memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name) != self.trade_direction:
-            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.STRATEGY
             await self.log_trade("closed")
             return True, profit_loss, percentage
@@ -148,7 +151,7 @@ class HookedTradeExecution:
             
         
         elif memory.manual_trade_exit_signal(self.deal_id):
-            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id)
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.USER
             await self.log_trade("closed")
             return True, profit_loss, percentage
@@ -177,7 +180,7 @@ class HookedTradeExecution:
                 status, profit_loss , percentage = await self.__monitor_position()
                 
                 if status:
-                    await insert_trade_history(trade_id=self.deal_id, epic=self.epic, size=self.trade_size, pnl=profit_loss, pnl_percentage=percentage, direction=self.trade_direction.value, exit_type=self.exit_type.value, hook_name=self.hook_name.upper(), entry_price=self.entry_price, exit_price=self.exit_price, opened_at=self.opened_trade_at.strftime("%Y-%m-%d %H:%M:%S"), closed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                    await insert_trade_history(trade_id=self.deal_id, epic=self.epic, size=self.trade_size, pnl=profit_loss, pnl_percentage=percentage, direction=self.trade_direction.value, exit_type=self.exit_type.value, hook_name=self.hook_name.upper(), entry_price=self.entry_price, exit_price=self.exit_price, opened_at=self.opened_trade_at.strftime("%Y-%m-%d %H:%M:%S"), closed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"), mode=self.position_mode)
                     break
                 
                 await self.sleep_time()

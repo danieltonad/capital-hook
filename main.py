@@ -17,8 +17,8 @@ async def startup_event():
     """
     Startup event handler
     """
-    await settings.sync_trade_mode()
     await migrate_db() # migrate DB
+    await settings.sync_trade_mode()
     
     
     # update market data

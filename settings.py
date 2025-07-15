@@ -43,7 +43,10 @@ class Settings:
         self.TRADE_MODE = trade_mode
         await update_trade_mode_db(trade_mode)
 
-    def get_capital_host(self) -> str:
+    def get_capital_host(self, mode: TradeMode = None) -> str:
+        if mode:
+            return self.CAPITAL_HOST_LIVE if mode == TradeMode.LIVE else self.CAPITAL_HOST_DEMO
+        
         return self.CAPITAL_HOST_LIVE if self.TRADE_MODE == TradeMode.LIVE else self.CAPITAL_HOST_DEMO
     
         

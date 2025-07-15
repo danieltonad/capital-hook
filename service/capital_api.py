@@ -1,5 +1,5 @@
 import asyncio, json
-from enums.trade import TradeDirection
+from enums.trade import TradeDirection, TradeMode
 from memory import memory, settings
 from logger import Logger
 from datetime import datetime, timedelta
@@ -142,13 +142,13 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
         await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
         return False
     
-   
-   
-async def close_trade(epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
+
+
+async def close_trade(epic: str, size: float, deal_id: str, position_mode: TradeMode, retry: int = 0) -> bool:
     try:
         # Use PUT to close specific position
         response = await settings.session.delete(
-            f"{settings.get_capital_host()}/api/v1/positions/{deal_id}",
+            f"{settings.get_capital_host(position_mode)}/api/v1/positions/{deal_id}",
             headers= memory.capital_auth_header,
         )
         if response.status_code == 200:

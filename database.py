@@ -57,7 +57,7 @@ async def migrate_db() -> None:
         
         
         
-async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str) -> None:
+async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float, pnl_percentage: float, direction: str, exit_type: str, hook_name: str, entry_price: float, exit_price: float, opened_at: str, closed_at: str, mode: TradeMode) -> None:
     from memory import settings
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
@@ -66,7 +66,7 @@ async def insert_trade_history(trade_id: str, epic: str, size: float, pnl: float
                 INSERT INTO trades (id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode)
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """, (
-                    trade_id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, settings.TRADE_MODE.value
+                    trade_id, epic, size, pnl, pnl_percentage, direction, exit_type, hook_name, entry_price, exit_price, opened_at, closed_at, mode.value
                 ))
         await db.commit()
 

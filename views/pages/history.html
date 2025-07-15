@@ -1,5 +1,5 @@
 {% extends "layout/dashboard.html" %} {% block content %}
-<div hx-get="/history/data" hx-trigger="load, every 10s" hx-swap="innerHTML">
+<div hx-get="/history/data" hx-trigger="load, every 5s" hx-swap="innerHTML">
   <div class="history-header header-large">
     <h1>History</h1>
     <div class="history-summary">
