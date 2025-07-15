@@ -8,22 +8,22 @@ Capital Hook is a powerful, self-hosted FastAPI application designed for algorit
 
 ## 🗒️ Table of Contents
 
-- [✨ Features](#-features)
-- [⚠️ Known Limitations](#️-known-limitations)
-- [🛠️ Tech Stack](#-tech-stack)
-- [🚀 Installation & Environment Setup](#-installation--environment-setup)
+- [✨ Features](#-✨features)
+- [⚠️ Known Limitations](#️⚠️-known-limitations)
+- [🛠️ Tech Stack](#🛠️-tech-stack)
+- [🚀 Installation & Environment Setup](#🚀-installation--environment-setup)
   - [Prerequisites](#prerequisites)
   - [1. Clone the Repository](#1-clone-the-repository)
   - [2. Set Up a Virtual Environment (Recommended)](#2-set-up-a-virtual-environment-recommended)
   - [3. Install Dependencies](#3-install-dependencies)
   - [4. Configure Capital.com API Credentials](#4-configure-capitalcom-api-credentials)
-- [⚙️ Usage Guide](#️-usage-guide)
+- [⚙️ Usage Guide](#️⚙️-usage-guide)
   - [Running the Application](#running-the-application)
 - [Accessing the Dashboard & Config Page](#accessing-the-dashboard--config-page)
 - [Viewing Real-Time Trade History](#viewing-real-time-trade-history)
   - [Configuring TradingView Webhooks](#configuring-tradingview-webhooks)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+- [🤝 Contributing](#🤝-contributing)
+- [📄 License](#📄-license)
 
 ---
 
@@ -37,14 +37,16 @@ Capital Hook provides a robust set of features designed to empower algorithmic t
   - **Live Positions**: View all trades currently in execution or managed by Capital Hook, providing immediate oversight of your active strategies.
   - **Demo & Live Mode Toggle**: Easily switch between your Capital.com demo and live accounts to test strategies risk-free or deploy them confidently to real markets.
 - **Dynamic Configuration**: A dedicated configuration page allows you to tailor the webhook behavior and trade parameters without modifying code:
-  - **Payload Setup**: Define custom JSON payloads for incoming TradingView webhooks to perfectly match your strategy's needs.
-  - **Stop Loss (SL) & Take Profit (TP)**: Set default or dynamic SL/TP levels for automated trade management.
-  - **Market Closed Handling (`MKT_CLOSED`)**: Configure how the hook should behave if a trade signal arrives when the market for the instrument is closed.
-  - **Strategy (`STRATEGY`) & Hook Name (`HOOKNAME`) Switches**: Use these to differentiate between various strategies or instances of the hook, enabling more granular control and logging.
+- **Payload Setup**: Define custom JSON payloads for incoming TradingView webhooks to perfectly match your strategy's needs.
+    - **Stop Loss (SL) & Take Profit (TP)**: Set default or dynamic SL/TP levels for automated trade management.
+    - **Market Closed Handling (`MKT_CLOSED`)**: Automatically manages trades when the market is about to close. If enabled, the hook will close any open position for the instrument 5 minutes before the market closes, ensuring positions are not left open during market downtime.
+    - **Strategy (`STRATEGY`) Switch**: Ensures that for each unique combination of `epic` and `hook_name` (strategy identifier), only one trade direction is active at a time. If a new signal arrives with the opposite `direction` (e.g., switching from BUY to SELL), the existing position is closed before opening the new one.
+    - **Hook Name (`HOOKNAME`) Switch**: Allows you to differentiate between multiple strategies or instances of the hook, providing more granular control and logging for each strategy or alert source.
 - **Comprehensive Trade History**: Gain detailed insights into your performance with a real-time view of all closed trades, including:
-  - **Detailed PnL (Profit & Loss)**: Analyze the profitability of individual trades and overall strategies.
-  - **Execution Timestamps**: Track when trades were opened and closed.
-  - **Associated Strategy Data**: Link closed trades back to the specific strategies that initiated them.
+    - **Detailed PnL (Profit & Loss)**: Analyze the profitability of individual trades and overall strategies.
+    - **Execution Timestamps**: Track when trades were opened and closed.
+    - **Associated Strategy Data**: Link closed trades back to the specific strategies that initiated them.
+    - **Persistent Storage with SQLite**: All trade history is securely stored in a local SQLite database, ensuring your trade records are retained across restarts and easily accessible for analysis.
 
 ---
 
@@ -57,7 +59,6 @@ Capital Hook provides a robust set of features designed to empower algorithmic t
 ## 🛠️ Tech Stack
 
 - **Backend Framework**: **FastAPI** (Python) - A modern, fast (high-performance) web framework for building APIs with Python 3.7+ based on standard Python type hints.
-- **Asynchronous Operations**: Likely leverages **`asyncio`** built into Python and FastAPI's native asynchronous capabilities for handling multiple requests efficiently.
 - **HTTP Requests**: **`httpx`** - A powerful, user-friendly HTTP client for Python, supporting both synchronous and asynchronous requests, used for interacting with the Capital.com API.
 - **Configuration Management**: **Environment variables** and potentially **`python-dotenv`** for loading configurations from a `.env` file, ensuring sensitive information is kept secure.
 - **Web Server**: **`Uvicorn`** - An ASGI web server, recommended for running FastAPI applications due to its speed and asynchronous nature.
@@ -92,7 +93,7 @@ It's highly recommended to use a **virtual environment** for your project. This 
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Linux/macOS
-# .\venv\Scripts\activate  # On Windows (use PowerShell or Git Bash for 'source' or just type the path)
+.\venv\Scripts\activate  # On Windows (use PowerShell or Git Bash for 'source' or just type the path)
 ```
 
 You should see `(venv)` prepended to your terminal prompt, indicating that the virtual environment is active.
@@ -121,11 +122,9 @@ Create a new file named `.env` in the root directory of your project (the same d
 CAPITAL_IDENTITY="YOUR_CAPITAL_COM_IDENTITY"
 CAPITAL_PASSWORD="YOUR_CAPITAL_COM_PASSWORD"
 CAPITAL_API_KEY="YOUR_CAPITAL_COM_API_KEY"
-CAPITAL_COM_DEMO_MODE="True" # Set to "False" for live trading
 ```
 
-- Replace `"YOUR_CAPITAL_COM_IDENTITY"`, `"YOUR_CAPITAL_COM_PASSWORD"`, and `"YOUR_CAPITAL_COM_API_KEY"` with the respective values obtained from your Capital.com account.
-- Set `CAPITAL_COM_DEMO_MODE` to `"True"` if you want the hook to interact with your Capital.com demo account for testing. Change it to `"False"` when you are ready to use your live trading account.
+- Replace `"YOUR_CAPITAL_COM_IDENTITY"`, `"YOUR_CAPITAL_COM_PASSWORD"`
 
 ---
 
@@ -174,13 +173,13 @@ To automate your trades, you need to set up alerts in TradingView that send data
 
         ```json
         {
-          "epic": "{{ticker}}",
-          "direction": "SELL",
-          "amount": 100.0,
-          "hook_name": "20/200EMA",
-          "profit": 120.0,
-          "loss": 50.0,
-          "exit_criteria": ["TP", "SL"]
+        "epic": "{{ticker}}",
+        "direction": "SELL",
+        "amount": 100.0,
+        "hook_name": "20/200EMA",
+        "profit": 120.0,
+        "loss": 50.0,
+        "exit_criteria": ["TP", "SL", "STRATEGY", "MKT_CLOSED"]
         }
         ```
 
