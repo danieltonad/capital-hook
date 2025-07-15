@@ -1,33 +1,7 @@
----
-
-# Capital Hook: TradingView to Capital.com Webhook Automation
-
-Capital Hook is a powerful, self-hosted FastAPI application designed for algorithmic traders. It acts as a **bridge between TradingView alerts (signals, screeners, Pine Script strategies) and Capital.com's CFD/forex execution API**, allowing you to automatically execute trades based on your predefined strategies. Say goodbye to manual trade execution and leverage the power of automation to react instantly to market opportunities\!
 
 ---
-
-## 🗒️ Table of Contents
-
-* [✨ Features](#features)
-* [⚠️ Known Limitations](#known-limitations)
-* [🛠️ Tech Stack](#tech-stack)
-* [🚀 Installation & Environment Setup](#installation--environment-setup)
-    * [Prerequisites](#prerequisites)
-    * [1. Clone the Repository](#1-clone-the-repository)
-    * [2. Set Up a Virtual Environment (Recommended)](#2-set-up-a-virtual-environment-recommended)
-    * [3. Install Dependencies](#3-install-dependencies)
-    * [4. Configure Capital.com API Credentials](#4-configure-capitalcom-api-credentials)
-* [⚙️ Usage Guide](#usage-guide)
-    * [Running the Application](#running-the-application)
-    * [Accessing the Dashboard & Config Page](#accessing-the-dashboard--config-page)
-    * [Viewing Real-Time Trade History](#viewing-real-time-trade-history)
-    * [Configuring TradingView Webhooks](#configuring-tradingview-webhooks)
-        * [Create a TradingView Alert](#create-a-tradingview-alert)
-* [🤝 Contributing](#contributing)
-* [📄 License](#license)
-
-
----
+## Capital Hook: TradingView to Capital.com Webhook Automation
+Capital Hook is a powerful, self-hosted FastAPI application for algorithmic traders. It serves as a **bridge between TradingView alerts (signals, screeners, Pine Script strategies) and the Capital.com CFD/forex execution API**, enabling you to automate trade execution based on your strategies. Eliminate manual trading and harness automation to respond instantly to market opportunities!
 
 ## ✨ Features
 

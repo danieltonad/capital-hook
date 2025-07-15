@@ -292,7 +292,6 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
             hours = memory.trading_hours.get(epic, {})
             if not hours:
                 hours = memory.trading_hours = await get_epic_hours(epic)
-            print(hours)
             
             # print("Hours => ", hours)
             now_utc = datetime.utcnow()
@@ -317,11 +316,9 @@ async def is_market_closed(epic: str, min: int = 5) -> bool:
                 if start_time_today <= now_utc < end_time_today:
                     # Market is currently open. Now check if it's closing soon.
                     time_remaining_minutes = (end_time_today - now_utc).total_seconds() / 60
-                    print("HERE", time_remaining_minutes)
                     return time_remaining_minutes <= min
             
-            # market closed
-            return True
+            return False
 
         except Exception as e:
             return False
