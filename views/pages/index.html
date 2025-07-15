@@ -12,7 +12,7 @@
 			<div
 				class="portfolio-stats"
 				hx-get="/portfolio"
-				hx-trigger="load, every 30s"
+				hx-trigger="load, every 5s"
 				hx-swap="innerHTML"
 			>
 				<div class="stat-box">
@@ -29,7 +29,7 @@
 				</div>
 				<div class="stat-box">
 					<div class="label">PnL</div>
-					<div class="value">{{data.portfolio.pnl}}</div>
+					<div class="value" id="{% if '-' in data.portfolio.pnl|string %}loss{% else %}profit{% endif %}">{{data.portfolio.pnl}}</div>
 				</div>
 			</div>
 		</div>
@@ -61,7 +61,7 @@
 							<td>{{position.direction}}</td>
 							<td>{{position.entry_price}}</td>
 							<td>{{position.date}}</td>
-							<td>{{position.pnl}}</td>
+							<td id="{% if '-' in position.pnl|string %}loss{% else %}profit{% endif %}">{{position.pnl}}</td>
 							<td>{{position.hook_name}}</td>
 							<td>
 								<button

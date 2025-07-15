@@ -1,6 +1,4 @@
-{% extends "layout/dashboard.html" %} {% block content %}
-<div hx-get="/history/data" hx-trigger="load, every 5s" hx-swap="innerHTML">
-  <div class="history-header header-large">
+<div class="history-header header-large">
     <h1>History</h1>
     <div class="history-summary">
       <div class="history-cluster">
@@ -65,5 +63,3 @@
 			<a href="#"><i data-lucide="chevron-right"></i></a>
 		</div> -->
   </div>
-</div>
-{% endblock %}

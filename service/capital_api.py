@@ -1,7 +1,6 @@
 import asyncio, json
-from settings import settings
-from enums.trade import TradeDirection
-from memory import memory
+from enums.trade import TradeDirection, TradeMode
+from memory import memory, settings
 from logger import Logger
 from datetime import datetime, timedelta
 
@@ -143,13 +142,13 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
         await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
         return False
     
-   
-   
-async def close_trade(epic: str, size: float, deal_id: str, retry: int = 0) -> bool:
+
+
+async def close_trade(epic: str, size: float, deal_id: str, position_mode: TradeMode, retry: int = 0) -> bool:
     try:
         # Use PUT to close specific position
         response = await settings.session.delete(
-            f"{settings.get_capital_host()}/api/v1/positions/{deal_id}",
+            f"{settings.get_capital_host(position_mode)}/api/v1/positions/{deal_id}",
             headers= memory.capital_auth_header,
         )
         if response.status_code == 200:
@@ -291,30 +290,35 @@ async def get_epic_hours(epic: str):
 async def is_market_closed(epic: str, min: int = 5) -> bool:
         try:
             hours = memory.trading_hours.get(epic, {})
-            
             if not hours:
                 hours = memory.trading_hours = await get_epic_hours(epic)
             
-            now = datetime.utcnow()
-            day_key = now.strftime("%a").lower()
+            # print("Hours => ", hours)
+            now_utc = datetime.utcnow()
+            day_key = now_utc.strftime("%a").lower()
             day_hours = hours.get(day_key, [])
 
             if not day_hours:
                 return True   # never opens today
 
-            current_hm = now.strftime("%H:%M")
             for rng in day_hours:
-                start, end = rng.split(" - ")
+                start_str, end_str = rng.split(" - ")
+                start_hour, start_min = map(int, start_str.split(":"))
+                end_hour, end_min = map(int, end_str.split(":"))
                 # print("Start => ", start, "End => ", end)
-                if start <= current_hm <= end:
-                    end_hour, end_min = map(int, end.split(":"))
-                    end_time = now.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
-                    if end_time < now:  # handles “cross-midnight”
-                        end_time += timedelta(days=1)
-                    return (end_time - now).total_seconds() / 60 <= min
+
+                start_time_today = now_utc.replace(hour=start_hour, minute=start_min, second=0, microsecond=0)
+                end_time_today = now_utc.replace(hour=end_hour, minute=end_min, second=0, microsecond=0)
+
+                if end_time_today < start_time_today:
+                    end_time_today += timedelta(days=1)
+
+                if start_time_today <= now_utc < end_time_today:
+                    # Market is currently open. Now check if it's closing soon.
+                    time_remaining_minutes = (end_time_today - now_utc).total_seconds() / 60
+                    return time_remaining_minutes <= min
             
-            # market closed
-            return True
+            return False
 
         except Exception as e:
             return False

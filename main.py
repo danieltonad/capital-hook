@@ -3,9 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
 from routes.view import view
-from database import settings, migrate_db
-from service.capital_socket import CapitalSocket
-from memory import memory
+from memory import memory, settings
 from service.capital_api import get_account_preferences, update_markets,update_auth_header
 from job import jobs
 
@@ -15,10 +13,12 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup_event():
+    from database import migrate_db
     """
     Startup event handler
-    """# create DB connection
+    """
     await migrate_db() # migrate DB
+    await settings.sync_trade_mode()
     
     
     # update market data

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Request
 from fastapi.responses import JSONResponse
 from model import TradingViewWebhookModel
-from settings import settings
-from memory import memory
+from memory import memory, settings
 from logger import Logger
 
 webhook = APIRouter()

@@ -10,7 +10,7 @@
 		/>
 		<link
 			rel="stylesheet"
-			href="{{ url_for('assets', path='css/styles.css') }}"
+			href="{{ request.url_for('assets', path='css/styles.css') }}"
 		/>
     <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
 		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
@@ -25,9 +25,13 @@
             <li><a href="/history">History</a></li>
           </ul>
           <label class="mode-toggle">
-            <span>Live</span>
-            <span>Demo</span>
-            <input type="checkbox" class="toggle-checkbox" />
+            <span hx-post="/api/mode" hx-ext="json-enc" hx-swap="none" hx-vals='{"mode": "LIVE"}' hx-trigger="click" hx-sync="this:queue">Live</span>
+            <span hx-post="/api/mode" hx-ext="json-enc" hx-swap="none" hx-vals='{"mode": "DEMO"}' hx-trigger="click" hx-sync="this:queue">Demo</span>
+            <input 
+            {% if mode == 'DEMO' %} checked {% endif %}
+              type="checkbox" 
+              class="toggle-checkbox" 
+            />
           </label>
         </div>
       </nav>
@@ -36,7 +40,13 @@
         {% block content %}
 		  {% endblock %}
       </main>
+
     </div>
-		<script src="{{ url_for('assets', path='js/main.js') }}"></script>
+    <div class="notify-toast">
+      <div class="notify-text">
+        Cpioed to clipboard
+      </div>
+    </div>
+		<script src="{{ request.url_for('assets', path='js/main.js') }}"></script>
 	</body>
 </html>

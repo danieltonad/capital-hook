@@ -5,7 +5,7 @@
 	<td>{{position.direction}}</td>
 	<td>{{position.entry_price}}</td>
 	<td>{{position.date}}</td>
-	<td>{{position.pnl}}</td>
+	<td id="{% if '-' in position.pnl|string %}loss{% else %}profit{% endif %}">{{position.pnl}}</td>
 	<td>{{position.hook_name}}</td>
 	<td>
 		<button

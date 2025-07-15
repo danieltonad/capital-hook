@@ -1,5 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap");
 :root {
+  --color-profit: #39e360;
+  --color-loss: #f56161;
+  --color-spread: #f3db05;
   --color-background: #f5f5f5;
   --color-surface: white;
   --color-text-primary: #333;
@@ -25,6 +28,18 @@
   --header-curve: 24px;
   --inner-curve: max(8px, calc(var(--outer-curve) - var(--pad-g)));
   --header-height: clamp(60px, 10vw, 70px);
+}
+
+#profit {
+  color: var(--color-profit);
+}
+
+#loss {
+  color: var(--color-loss);
+}
+
+#spread {
+  color: var(--color-spread);
 }
 
 * {
@@ -96,8 +111,8 @@ nav .mode-toggle {
   cursor: pointer;
   position: relative;
   -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 nav .mode-toggle span {
   color: var(--color-text-primary);
@@ -176,10 +191,15 @@ main {
 .platform-container:has(.toggle-checkbox:checked) .sidebar-header h3 {
   opacity: 0;
 }
-.platform-container:has(.toggle-checkbox:checked) .sidebar-header .toggle-label {
+.platform-container:has(.toggle-checkbox:checked)
+  .sidebar-header
+  .toggle-label {
   left: calc((var(--sidebar-collapsed-width) - var(--icon-size)) / 2);
 }
-.platform-container:has(.toggle-checkbox:checked) .sidebar-header .toggle-label svg {
+.platform-container:has(.toggle-checkbox:checked)
+  .sidebar-header
+  .toggle-label
+  svg {
   rotate: 0deg;
 }
 .platform-container:has(.toggle-checkbox:checked) .sidebar .portfolio-stats {
@@ -436,8 +456,9 @@ thead {
   font-weight: 500;
   text-transform: capitalize;
 }
-.config-form .form-group input[type=text],
-.config-form .form-group input[type=email],
+.config-form .form-group input[type="text"],
+.config-form .form-group input[type="number"],
+.config-form .form-group input[type="email"],
 .config-form .form-group select {
   padding: 10px;
   border: 1px solid var(--color-border);
@@ -445,8 +466,9 @@ thead {
   border-radius: 6px;
   box-sizing: border-box;
 }
-.config-form .form-group input[type=text]:focus,
-.config-form .form-group input[type=email]:focus,
+.config-form .form-group input[type="text"]:focus,
+.config-form .form-group input[type="email"]:focus,
+.config-form .form-group input[type="number"]:focus,
 .config-form .form-group select:focus {
   outline: 1.5px solid var(--color-text-muted);
 }
@@ -473,14 +495,17 @@ thead {
   overflow-x: auto;
   max-width: 100%;
   scrollbar-width: thin;
+  
+
 }
 .config-form .checkbox-options > label {
   display: flex;
   align-items: center;
   text-transform: capitalize;
   font-size: 14px;
+  cursor: pointer;
 }
-.config-form .checkbox-options > label input[type=checkbox] {
+.config-form .checkbox-options > label input[type="checkbox"] {
   display: none;
 }
 .config-form .checkbox-options > label span {
@@ -500,14 +525,22 @@ thead {
   opacity: 0;
 }
 .config-form .checkbox-options > label label {
+  cursor: pointer;
   padding: 0 6px;
   white-space: nowrap;
 }
-.config-form .checkbox-options > label:has(input[type=checkbox]:checked) span {
+.config-form
+  .checkbox-options
+  > label:has(input[type="checkbox"]:checked)
+  span {
   background-color: var(--color-success);
   border-color: var(--color-success);
 }
-.config-form .checkbox-options > label:has(input[type=checkbox]:checked) span svg {
+.config-form
+  .checkbox-options
+  > label:has(input[type="checkbox"]:checked)
+  span
+  svg {
   opacity: 1;
 }
 .config-form .trade-setup {
@@ -589,6 +622,38 @@ thead {
   background-color: var(--color-primary-hover);
 }
 
+#payload-response {
+  display: none;
+}
+
+.notify-toast {
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  z-index: 4;
+  margin: 0;
+  padding: 10px;
+  transition: .5s ease-in-out;
+  opacity: 0;
+}
+
+.show{
+  opacity: 1;
+}
+
+.notify-text {
+  margin: 2% auto;
+  text-align: center;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  max-width: 300px;
+  padding: 8px 15px;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+    rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+  cursor: pointer;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: #121212;
@@ -607,4 +672,4 @@ thead {
     --toggle-handle: #333;
     --toggle-bg: #121212;
   }
-}/*# sourceMappingURL=styles.css.map */
+} /*# sourceMappingURL=styles.css.map */
