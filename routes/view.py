@@ -88,7 +88,7 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
     data = await get_trade_history()
     trades = data.get("trades", [])
     profits = data.get("profits", "0.00")
-    loasses = data.get("loasses", "0.00")
+    losses = data.get("losses", "0.00")
     spreads = data.get("spreads", "0.00")
     pnl = data.get("pnl", "0.00")
     count = data.get("count", "0.00")
@@ -96,7 +96,7 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
         "request": request, 
         "trades": trades, 
         "profits": profits, 
-        "loasses": loasses, 
+        "losses": losses, 
         "spreads": spreads, 
         "pnl": pnl, 
         "count": count,
@@ -109,7 +109,7 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
     data = await get_trade_history()
     trades = data.get("trades", [])
     profits = data.get("profits", "0.00")
-    loasses = data.get("loasses", "0.00")
+    losses = data.get("losses", "0.00")
     spreads = data.get("spreads", "0.00")
     pnl = data.get("pnl", "0.00")
     count = data.get("count", "0.00")
@@ -117,7 +117,7 @@ async def trade_history_view(request: Request) -> _TemplateResponse:
         "request": request,
         "trades": trades,
         "profits": profits, 
-        "loasses": loasses, 
+        "losses": losses, 
         "spreads": spreads, 
         "pnl": pnl, 
         "count": count
