@@ -108,7 +108,7 @@ async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
             return 0.0, 0.0
     
     
-async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
+async def open_trade(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> str | bool:
     try:
         # Build payload
         payload = {
@@ -125,21 +125,22 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection):
         if response.status_code == 200:
             data = response.json()
             reference = data["dealReference"]
-            await Logger.app_log(
-                title=f"OPENED_{trade_direction.value}_TRADE",
-                message=f"{size} size of {epic} ({reference})"
-            )
             deal_id = await get_epic_deal_id(epic, size, trade_direction)
             memory.update_deal_id(deal_id) # Update deal ID in memory
+            if deal_id:
+                await Logger.app_log(
+                    title=f"OPENED_{trade_direction.value}_TRADE",
+                    message=f"{size} size of {epic} ({reference})"
+                )
+            else:
+                raise ValueError("Could not retrieve deal ID")
+            
             return deal_id
-        else:
-            await Logger.app_log(
-                title=f"OPEN_{trade_direction.value}_TRADE_ERR",
-                message=f"Epic: {epic} | Status {response.status_code} => {response.text}"
-            )
-            return False
     except Exception as e:
         await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
+        if retry < settings.MAX_RETRY_ATTEMPTS:
+            await asyncio.sleep(settings.RETRY_SLEEP_TIME)
+            return await open_trade(epic, size, trade_direction, retry + 1)
         return False
     
 
@@ -162,14 +163,13 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
             await delete_position(deal_id) # remove position from DB if already closed
 
             return data.get("dealReference", False)
-        
 
         raise ValueError(f"Failed to close trade: {response.status_code} => {response.text}")
     
     except Exception as e:
         await Logger.app_log(title=f"{epic}_CLOSE_TRADE_ERR", message=str(e))
-        if retry < 3:
-            await asyncio.sleep(30)
+        if retry < settings.MAX_RETRY_ATTEMPTS:
+            await asyncio.sleep(settings.RETRY_SLEEP_TIME)
             return await close_trade(epic, size, deal_id, retry + 1)
         return False
         
