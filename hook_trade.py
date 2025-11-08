@@ -8,6 +8,7 @@ from enums.trade import TradeInstrument, TradeMode
 from service.socket_manager import socket_manager, memory
 from utils import round_trade_size
 from typing import List
+from trail import TrailingSL
 
 class HookedTradeExecution:
     trade_direction: TradeDirection
@@ -30,6 +31,7 @@ class HookedTradeExecution:
     position_mode: TradeMode
     profit_loss: float
     percentage: float
+    trailing_stop: TrailingSL
     
     
     def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType]):
@@ -45,6 +47,7 @@ class HookedTradeExecution:
         self.leverage = memory.get_leverage(epic)
         self.trade_instrument = memory.get_trade_instrument(epic)
         self.position_mode = settings.TRADE_MODE
+        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=20.0)
         
     
     def __log_trade_position(self, profit_loss, percentage):
@@ -70,13 +73,12 @@ class HookedTradeExecution:
             self.trade_size = TradeInstrument(self.trade_size) if self.trade_size > 2 else float(f"{self.trade_size:.2f}")
         else:
             self.trade_size = float(f"{self.trade_size:.2g}") if self.trade_size < 1 else round_trade_size(self.trade_size) if self.trade_size > 2 else float(f"{self.trade_size:.2f}")
-        return leverage_size
-            
-    async def __risk_reward_setup(self):
+
+    def __risk_reward_setup(self):
         ask, bid =  memory.get_current_price(self.epic)
         self.entry_price = float(ask) if self.trade_direction == TradeDirection.BUY else float(bid)
         reward, risk =  self.profit, self.loss
-        leverage_size = self.__set_trade_size()
+        self.__set_trade_size()
         
         # Price movement for loss and profit
         loss_price_move = risk / self.trade_size
@@ -168,6 +170,13 @@ class HookedTradeExecution:
             await self.log_trade("closed")
             return True, profit_loss, percentage
         
+        # trail stop
+        elif self.trailing_stop.update_pnl(self.profit_loss):
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
+            self.exit_type = ExitType.TRAILING_STOP
+            await self.log_trade("closed")
+            return True, profit_loss, percentage
+        
         # manual exit
         elif memory.manual_trade_exit_signal(self.deal_id):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
@@ -187,7 +196,7 @@ class HookedTradeExecution:
             await socket_manager.subscribe(self.epic)
             
             # set risk reward
-            await self.__risk_reward_setup()
+            self.__risk_reward_setup()
             
             # open position
             self.deal_id = await open_trade(epic=self.epic, size=self.trade_size, trade_direction=self.trade_direction)

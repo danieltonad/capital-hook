@@ -1,13 +1,13 @@
 import asyncio
 from enums.trade import TradeDirection, ExitType
 from logger import Logger
-from service.capital_api import is_market_eow_close, open_trade, close_trade, is_market_eod_close
+from service.capital_api import is_market_eow_close, close_trade, is_market_eod_close
 from datetime import datetime
 from database import save_trade_history
-from enums.trade import TradeInstrument, TradeMode
+from enums.trade import TradeMode
 from service.socket_manager import socket_manager, memory
-from utils import round_trade_size
 from typing import List
+from trail import TrailingSL
 
 class ResumeTradeExecution:
     trade_direction: TradeDirection
@@ -25,6 +25,7 @@ class ResumeTradeExecution:
     position_mode: TradeMode
     profit_loss: float
     percentage: float
+    trailing_stop: TrailingSL
 
 
     def __init__(self, epic: str, size: float, deal_id: str, entry_price: float, entry_date: str, trade_direction: TradeDirection, profit_price: int, loss_price: int, hook_name: str, exit_criteria: List[ExitType]):
@@ -40,6 +41,9 @@ class ResumeTradeExecution:
         self.exit_criteria = exit_criteria
         self.opened_trade_at = datetime.strptime(entry_date, "%d %b %H:%M")
         self.position_mode = settings.TRADE_MODE
+        profit = abs(profit_price - entry_price) * size
+        loss = abs(entry_price - loss_price) * size
+        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=20.0)
         
     
     def __log_trade_position(self, profit_loss, percentage):
@@ -126,6 +130,13 @@ class ResumeTradeExecution:
         elif ExitType.RECALIBRATE in self.exit_criteria and memory.recalibrate_trade():
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.RECALIBRATE
+            await self.log_trade("closed")
+            return True, profit_loss, percentage
+        
+        # trail stop
+        elif self.trailing_stop.update_pnl(self.profit_loss):
+            await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
+            self.exit_type = ExitType.TRAILING_STOP
             await self.log_trade("closed")
             return True, profit_loss, percentage
         

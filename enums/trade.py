@@ -15,6 +15,7 @@ class ExitType(Enum):
     EOD_CLOSE = "EOD_CLOSE"
     EOW_CLOSE = "EOW_CLOSE"
     RECALIBRATE = "RECALIBRATE"
+    TRAILING_STOP = "TRAILING_STOP"
     
 class TradeMode(Enum):
     DEMO = "DEMO"
