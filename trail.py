@@ -2,11 +2,17 @@ class TrailingSL:
     def __init__(self, pnl: float, tp: float, sl: float, trail_range: float):
         self.pnl = pnl
         self.tp = tp
-        self.sl = -sl
+        self.sl = -abs(sl)  # ensure it's negative
         self.trail_range = trail_range
 
         self.new_max = pnl
-        self.cutoff = pnl - trail_range
+        self.cutoff = self.sl  # cutoff starts at SL
+
+    def _pick_stop(self) -> float:
+        """Choose the correct active stop based on sign logic."""
+        if self.sl < 0 and self.cutoff < 0:
+            return min(self.sl, self.cutoff)  # pick more negative one
+        return max(self.sl, self.cutoff)  # otherwise take the higher one
 
     def update_pnl(self, pnl: float) -> bool:
         """
@@ -16,17 +22,17 @@ class TrailingSL:
         """
         self.pnl = pnl
 
-        # Update trailing max and cutoff if PnL increases
-        if pnl > self.new_max:
+        # Only trail when in profit
+        if pnl > 0 and pnl > self.new_max:
             self.new_max = pnl
-            self.cutoff = self.new_max - self.trail_range
+            self.cutoff = max(self.cutoff, self.new_max - self.trail_range)
 
         # Check TP hit
         if pnl >= self.tp:
             return True
 
-        # Check SL or trailing stop hit
-        if pnl <= max(self.sl, self.cutoff):
+        # Check SL or trailing stop hit (using new rule)
+        if pnl <= self._pick_stop():
             return True
 
         return False
@@ -40,4 +46,5 @@ class TrailingSL:
             "trail_range": self.trail_range,
             "new_max": self.new_max,
             "cutoff": self.cutoff,
+            "active_stop": self._pick_stop(),
         }

@@ -134,7 +134,7 @@ class ResumeTradeExecution:
             return True, profit_loss, percentage
         
         # trail stop
-        elif self.trailing_stop.update_pnl(self.profit_loss):
+        elif self.trailing_stop.update_pnl(profit_loss):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.TRAIL
             await self.log_trade("closed")
