@@ -51,7 +51,8 @@ class Jobs:
                     profit_price=position.profit_price,
                     loss_price=position.loss_price,
                     hook_name=position.hook_name,
-                    exit_criteria=position.exit_criteria
+                    exit_criteria=position.exit_criteria,
+                    trail_sl=position.trail_sl
                 )
                 print(f"Resuming {position.epic} {position.direction.value} trade on [{position.hook_name}]")
                 asyncio.create_task(resume_trade.execute_trade())

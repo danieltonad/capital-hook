@@ -36,14 +36,15 @@ async def migrate_db() -> None:
                 CREATE TABLE IF NOT EXISTS positions (
                     id TEXT PRIMARY KEY,
                     epic TEXT NOT NULL,
-                    size TEXT NOT NULL,
+                    size REAL NOT NULL,
                     hook_name TEXT NOT NULL,
                     direction TEXT NOT NULL,
-                    entry_price TEXT NOT NULL,
+                    entry_price REAL NOT NULL,
                     entry_date TEXT NOT NULL,
                     exit_criteria TEXT NOT NULL,
                     profit_price REAL NOT NULL,
                     loss_price REAL NOT NULL,
+                    trail_sl INTEGER NOT NULL,
                     mode TEXT NOT NULL
                 )
             """)
@@ -182,7 +183,7 @@ async def get_positions() -> list:
             )
             rows = await cursor.fetchall()
             for row in rows:
-                id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, mode = row
+                id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, trail_sl, mode = row
                 position = {
                     "id": id,
                     "epic": epic,
@@ -194,22 +195,23 @@ async def get_positions() -> list:
                     "exit_criteria": [ExitType(e.strip()) for e in exit_criteria.split(",")],
                     "profit_price": profit_price,
                     "loss_price": loss_price,
+                    "trail_sl": trail_sl,
                     "mode": mode
                 }
                 positions.append(PositionsModel(**position))
     return positions
 
 
-async def save_position(id: str, epic: str, size: float, hook_name: str, direction: str, entry_price: float, entry_date: str, exit_criteria: str, profit_price: float, loss_price: float, mode: TradeMode) -> None:
+async def save_position(id: str, epic: str, size: float, hook_name: str, direction: str, entry_price: float, entry_date: str, exit_criteria: str, profit_price: float, loss_price: float, trail_sl: int, mode: TradeMode) -> None:
     from memory import settings
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
             await cursor.execute(
                 """
-                INSERT INTO positions (id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, mode)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                INSERT INTO positions (id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, trail_sl, mode)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?) 
                 """, (
-                    id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, mode.value
+                    id, epic, size, hook_name, direction, entry_price, entry_date, exit_criteria, profit_price, loss_price, trail_sl, mode.value
                 ))
         await db.commit()
 

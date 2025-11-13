@@ -34,7 +34,7 @@ class HookedTradeExecution:
     trailing_stop: TrailingSL
     
     
-    def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType]):
+    def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int = 20):
         from settings import settings
         self.trade_direction = trade_direction
         self.epic = epic
@@ -47,7 +47,7 @@ class HookedTradeExecution:
         self.leverage = memory.get_leverage(epic)
         self.trade_instrument = memory.get_trade_instrument(epic)
         self.position_mode = settings.TRADE_MODE
-        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=20.0)
+        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=trail_sl)
         
     
     def __log_trade_position(self, profit_loss, percentage):
@@ -171,7 +171,7 @@ class HookedTradeExecution:
             return True, profit_loss, percentage
         
         # trail stop
-        elif self.trailing_stop.update_pnl(self.profit_loss):
+        elif self.trailing_stop.update_pnl(profit_loss):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.TRAIL
             await self.log_trade("closed")
@@ -207,7 +207,7 @@ class HookedTradeExecution:
             self.opened_trade_at = datetime.now()
             
             # save position
-            await save_position(id=self.deal_id, epic=self.epic, size=self.trade_size, hook_name=self.hook_name, direction=self.trade_direction.value, entry_price=self.entry_price, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), exit_criteria=",".join([e.value for e in self.exit_criteria]), profit_price=self.target_profit_price, loss_price=self.stop_loss_price, mode=self.position_mode)
+            await save_position(id=self.deal_id, epic=self.epic, size=self.trade_size, hook_name=self.hook_name, direction=self.trade_direction.value, entry_price=self.entry_price, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), exit_criteria=",".join([e.value for e in self.exit_criteria]), profit_price=self.target_profit_price, loss_price=self.stop_loss_price, trail_sl=self.trailing_stop.trail_range, mode=self.position_mode)
                 
             # monitor trade
             while True:

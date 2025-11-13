@@ -28,7 +28,7 @@ class ResumeTradeExecution:
     trailing_stop: TrailingSL
 
 
-    def __init__(self, epic: str, size: float, deal_id: str, entry_price: float, entry_date: str, trade_direction: TradeDirection, profit_price: int, loss_price: int, hook_name: str, exit_criteria: List[ExitType]):
+    def __init__(self, epic: str, size: float, deal_id: str, entry_price: float, entry_date: str, trade_direction: TradeDirection, profit_price: int, loss_price: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int):
         from settings import settings
         self.trade_direction = trade_direction
         self.epic = epic
@@ -43,7 +43,7 @@ class ResumeTradeExecution:
         self.position_mode = settings.TRADE_MODE
         profit = abs(profit_price - entry_price) * size
         loss = abs(entry_price - loss_price) * size
-        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=20.0)
+        self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=trail_sl)
         
     
     def __log_trade_position(self, profit_loss, percentage):

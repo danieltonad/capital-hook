@@ -108,6 +108,7 @@ async def generate_payload(data: HookPayloadModel):
         "hook_name": data.hook_name.upper(),
         "profit": data.take_profit,
         "loss": data.stop_loss,
+        "trail_sl": data.trail_sl,
         "exit_criteria": [
         v for k, v in mapping.items() if getattr(data, k, None) == 'on'
     ]

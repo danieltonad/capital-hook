@@ -11,6 +11,7 @@ class TradingViewWebhookModel(BaseModel):
     hook_name: str
     profit: Annotated[int, conint(ge=5)] 
     loss: Annotated[int, conint(ge=5)] 
+    trail_sl: Optional[Annotated[int, conint(ge=5)]] = None
     exit_criteria: List[ExitType]
 
 
@@ -21,6 +22,7 @@ class HookPayloadModel(BaseModel):
     trade_amount: Annotated[float, conint(gt=10)]
     stop_loss: Annotated[float, conint(gt=10)]
     take_profit: Annotated[float, conint(gt=10)]
+    trail_sl: Optional[Annotated[int, conint(gt=0)]] = None
     take_profit_exit: Optional[Literal['on']] = None
     stop_loss_exit: Optional[Literal['on']] = None
     strategy_exit: Optional[Literal['on']] = None
@@ -44,4 +46,5 @@ class PositionsModel(BaseModel):
     exit_criteria: List[ExitType]
     profit_price: float
     loss_price: float
+    trail_sl: int
     mode: TradeMode
