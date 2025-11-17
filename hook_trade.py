@@ -211,7 +211,7 @@ class HookedTradeExecution:
                 
             # monitor trade
             while True:
-                status, profit_loss , percentage = await self.__monitor_position()
+                status, profit_loss, percentage = await self.__monitor_position()
                 
                 if status:
                     await save_trade_history(trade_id=self.deal_id, epic=self.epic, size=self.trade_size, pnl=profit_loss, pnl_percentage=percentage, direction=self.trade_direction.value, exit_type=self.exit_type.value, hook_name=self.hook_name.upper(), entry_price=self.entry_price, exit_price=self.exit_price, opened_at=self.opened_trade_at.strftime("%Y-%m-%d %H:%M:%S"), closed_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"), mode=self.position_mode)

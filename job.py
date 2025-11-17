@@ -3,6 +3,7 @@ from service.socket_manager import socket_manager, memory
 from service.capital_api import update_auth_header, get_epic_hours, update_markets
 
 
+
 class Jobs:
     
     async def update_epic_hours(self):
@@ -61,5 +62,8 @@ class Jobs:
             else:
                 print(f"Position {position.id} no longer active. Deleting from DB.")
                 await delete_position(position.id)
+
+
+
 
 jobs = Jobs()

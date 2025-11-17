@@ -1,4 +1,3 @@
-import asyncio
 from enums.trade import TradeDirection, ExitType
 from logger import Logger
 from service.capital_api import is_market_eow_close, close_trade, is_market_eod_close
@@ -8,6 +7,7 @@ from enums.trade import TradeMode
 from service.socket_manager import socket_manager, memory
 from typing import List
 from trail import TrailingSL
+import asyncio
 
 class ResumeTradeExecution:
     trade_direction: TradeDirection
