@@ -3,7 +3,7 @@ class TrailingSL:
         self.pnl = pnl
         self.tp = tp
         self.sl = -abs(sl)  # ensure it's negative
-        self.trail_range = trail_range
+        self.trail_range = 1.5 * trail_range
 
         self.new_max = pnl
         self.cutoff = self.sl  # cutoff starts at SL
