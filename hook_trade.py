@@ -34,7 +34,7 @@ class HookedTradeExecution:
     trailing_stop: TrailingSL
     trail_sl: int
     
-    def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int = 20):
+    def __init__(self, trade_direction: TradeDirection, epic: str, trade_amount: int, profit: int, loss: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int):
         from settings import settings
         self.trade_direction = trade_direction
         self.epic = epic
