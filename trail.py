@@ -2,49 +2,50 @@ class TrailingSL:
     def __init__(self, pnl: float, tp: float, sl: float, trail_range: float):
         self.pnl = pnl
         self.tp = tp
-        self.sl = -abs(sl)  # ensure it's negative
-        self.trail_range = 1.5 * trail_range
+        self.sl = sl
+        self.trail_range = trail_range
 
+        self.trailing_active = False
         self.new_max = pnl
-        self.cutoff = self.sl  # cutoff starts at SL
-
-    def _pick_stop(self) -> float:
-        """Choose the correct active stop based on sign logic."""
-        if self.sl < 0 and self.cutoff < 0:
-            return min(self.sl, self.cutoff)  # pick more negative one
-        return max(self.sl, self.cutoff)  # otherwise take the higher one
+        self.cutoff = 0  # trailing stop, only meaningful when trailing_active
 
     def update_pnl(self, pnl: float) -> bool:
-        """
-        Update PnL and check exit conditions.
-        Returns:
-            bool: True if TP or SL hit, False otherwise.
-        """
         self.pnl = pnl
 
-        # Only trail when in profit
-        if pnl > 0 and pnl > self.new_max:
+        # Update new max PnL
+        if pnl > self.new_max:
             self.new_max = pnl
+
+        # Activate trailing if PnL exceeds 2 * trail_range
+        if not self.trailing_active and pnl >= 2 * self.trail_range:
+            self.trailing_active = True
+            self.cutoff = self.new_max - self.trail_range
+
+        # Update trailing stop if active
+        if self.trailing_active:
             self.cutoff = max(self.cutoff, self.new_max - self.trail_range)
 
-        # Check TP hit
+        # Determine active stop
+        active_stop = self.cutoff if self.trailing_active else -float('inf')  # no stop before trailing
+
+        # Check TP
         if pnl >= self.tp:
             return True
 
-        # Check SL or trailing stop hit (using new rule)
-        if pnl <= self._pick_stop():
+        # Check if stop is hit (only if trailing active)
+        if self.trailing_active and pnl <= active_stop:
             return True
 
         return False
 
-    def status(self) -> dict:
-        """Return current trailing state."""
+    def status(self):
         return {
             "pnl": self.pnl,
             "tp": self.tp,
             "sl": self.sl,
             "trail_range": self.trail_range,
+            "trailing_active": self.trailing_active,
             "new_max": self.new_max,
             "cutoff": self.cutoff,
-            "active_stop": self._pick_stop(),
+            "active_stop": self.cutoff if self.trailing_active else None,
         }
