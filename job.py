@@ -42,6 +42,7 @@ class Jobs:
             
         for position in positions:
             if position.id in deal_ids:
+                memory.update_trading_view_hooked_trades(epic=position.epic, direction=position.direction, hook_name=position.hook_name)
                 resume_trade = ResumeTradeExecution(
                     epic=position.epic,
                     size=position.size,
@@ -58,7 +59,6 @@ class Jobs:
                 print(f"Resuming {position.epic} {position.direction.value} trade on [{position.hook_name}]")
                 asyncio.create_task(resume_trade.execute_trade())
                 await asyncio.sleep(2) # slight delay to avoid overload
-                memory.update_trading_view_hooked_trades(epic=position.epic, direction=position.direction, hook_name=position.hook_name)
             else:
                 print(f"Position {position.id} no longer active. Deleting from DB.")
                 await delete_position(position.id)
