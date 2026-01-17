@@ -17,8 +17,8 @@ class Memory(TrailRecalibration):
         self.preferences: dict = {}
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
-        self.recalibrate_profit: int = 500  # PnL threshold for recalibration
-        self.recalibrate_trail_guage: int = 70   # Trailing PnL for recalibration
+        self.recalibrate_profit: int = 300  # PnL threshold for recalibration
+        self.recalibrate_trail_guage: int = 15   # Trailing PnL for recalibration
         super().__init__(0, recalibrate_at=self.recalibrate_profit, trail=self.recalibrate_trail_guage)
 
 
@@ -136,7 +136,7 @@ class Memory(TrailRecalibration):
     def recalibrate_trade(self) -> bool:
         """Update PnL and check if recalibration trigger is met."""
         pnl_total = int(self.positions_pnl())
-        return self.update_pnl(pnl_total)  # returns True if recalibration condition met
+        return self.update_pnl(pnl_total)
 
     
         

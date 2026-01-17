@@ -122,7 +122,8 @@ class ResumeTradeExecution:
         # strategy switch
         elif ExitType.STRATEGY in self.exit_criteria and memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name) != self.trade_direction:
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
-            self.exit_type = ExitType.STRATEGY
+            new_direction = memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name)
+            self.exit_type = ExitType.EXIT if new_direction in [TradeDirection.EXIT_BUY, TradeDirection.EXIT_SELL] else ExitType.STRATEGY
             await self.log_trade("closed")
             return True, profit_loss, percentage
 

@@ -5,12 +5,15 @@ class TradeDirection(Enum):
     SELL = "SELL"
     BUY = "BUY"
     NEUTRAL = "NEUTRAL"
+    EXIT_BUY = "EXIT_BUY"
+    EXIT_SELL = "EXIT_SELL"
     
     
 class ExitType(Enum):
     TP = "TP"
     SL = "SL"
     USER = "USER"
+    EXIT = "EXIT"
     STRATEGY = "STRATEGY"
     EOD_CLOSE = "EOD_CLOSE"
     EOW_CLOSE = "EOW_CLOSE"
