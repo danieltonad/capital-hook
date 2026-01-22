@@ -17,9 +17,9 @@ class Memory(TrailRecalibration):
         self.preferences: dict = {}
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
-        self.recalibrate_profit: int = 300  # PnL threshold for recalibration
-        self.recalibrate_trail_guage: int = 15   # Trailing PnL for recalibration
-        super().__init__(0, recalibrate_at=self.recalibrate_profit, trail=self.recalibrate_trail_guage)
+        self.profit_percentage: int = 70  # profit percentage for recalibration
+        self.trail: int = 5   # trail percentage range for recalibration
+        super().__init__(profit_percentage=self.profit_percentage, trail=self.trail)
 
 
 
@@ -132,11 +132,17 @@ class Memory(TrailRecalibration):
         """Get the total PnL of current open positions."""
         return sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values())
     
+    def profits_and_losses(self) -> tuple[float, float]:
+        """Get total profits and total losses separately."""
+        total_profit = sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values() if float(pos["pnl"]) > 0)
+        total_loss = sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values() if float(pos["pnl"]) < 0)
+        return abs(total_profit), abs(total_loss)
+    
 
     def recalibrate_trade(self) -> bool:
         """Update PnL and check if recalibration trigger is met."""
-        pnl_total = int(self.positions_pnl())
-        return self.update_pnl(pnl_total)
+        total_profit, total_loss = self.profits_and_losses()
+        return self.update_pnl(total_profit, total_loss)
 
     
         

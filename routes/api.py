@@ -117,3 +117,16 @@ async def generate_payload(data: HookPayloadModel):
         status_code=status.HTTP_200_OK,
         content=payload
     )
+
+
+
+
+@api.get("/recalibrate/status")
+async def get_recalibration_status():   
+    """
+    Get the recalibration status.
+    """
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=memory.recalibration_status()
+    )

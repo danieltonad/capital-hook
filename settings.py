@@ -15,7 +15,7 @@ class Settings:
     APP_TITLE = "Capital Hook"
     DB_PATH = "database.db"
     DB_CONNECTION: Connection = None
-    MAX_RETRY_ATTEMPTS: int = 3
+    MAX_RETRY_ATTEMPTS: int = 5
     RETRY_SLEEP_TIME: int = 15  # in seconds
 
     CAPITAL_HOST_LIVE: str = "https://api-capital.backend-capital.com"

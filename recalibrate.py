@@ -1,94 +1,84 @@
 import time
 
 class TrailRecalibration:
-    def __init__(self, pnl: float, recalibrate_at: float, trail: float):
-        """
-        Initialize Trail Recalibration tracker.
-        """
-        self.pnl = pnl
-        self.recalibrate_at = recalibrate_at
+    def __init__(self, profit_percentage: float, trail: float, recal_cooldown_sec: float = 60.0):
+        self.profit_percentage = profit_percentage
         self.trail = trail
-
-        # Internal tracking
-        self.new_max = pnl
+        self.recal_cooldown_sec = recal_cooldown_sec
+        
+        self.is_active = False
+        self.in_recalibration = False
+        self._recal_start_time = None
+        
+        self.new_max = 0.0
         self.cutoff = None
-        self.last_recalibration_time = 0
-        self.cooldown_period = 30  # seconds
-        self.is_active = False  # currently in trailing mode
-        self.in_recalibration = False  # whether recalibration is still active (cooldown phase)
+        self.last_pnl = 0.0
 
-    def update_pnl(self, pnl: float):
-        """
-        Update real-time PnL value and manage state transitions.
-        Returns:
-            bool: True if recalibration condition met or in cooldown, False otherwise.
-        """
-        self.pnl = pnl
+    def pnl_percentage_ratio(self, profit: float, loss: float) -> tuple[float, float]:
+        abs_p = abs(profit)
+        abs_l = abs(loss)
+        total = abs_p + abs_l
+        if total == 0:
+            return (0.0, 0.0)
+        return (round((abs_p / total) * 100, 2), round((abs_l / total) * 100, 2))
 
-        #If in cooldown, keep returning True until cooldown expires
-        if self.in_recalibration:
-            if self._cooldown_expired():
-                self.in_recalibration = False  # reset
+    def update_pnl(self, gross_profit: float, gross_loss: float, current_time: float = None) -> bool:
+        if current_time is None:
+            current_time = time.time()
+
+        net_pnl = gross_profit - gross_loss
+        self.last_pnl = net_pnl
+        profit_pct, _ = self.pnl_percentage_ratio(gross_profit, gross_loss)
+
+        # 🔹 Auto-exit recalibration after cooldown
+        if self.in_recalibration and self._recal_start_time:
+            if current_time - self._recal_start_time >= self.recal_cooldown_sec:
+                self.exit_recalibration()
+                # After exit, don't return True anymore
                 return False
-            return True  # maintain recalibration signal
+            else:
+                # Still in cooldown → keep returning True!
+                return True
 
-        # If cooling down prevented recalibration start, skip updating
-        if not self._can_recalibrate():
-            return False
+        # 🔹 If we're here, NOT in recalibration
+        # Check activation
+        if not self.is_active:
+            if self.profit_percentage and profit_pct >= self.profit_percentage:
+                self._activate_trailing(net_pnl)
 
-        # If PnL crosses recalibration threshold, start trailing
-        if not self.is_active and pnl >= self.recalibrate_at:
-            self._activate_trailing()
-            return False
-
-        # While trailing
+        # 🔹 Trailing monitoring
         if self.is_active:
-            if pnl > self.new_max:
-                self.new_max = pnl
-                self.cutoff = self.new_max - self.trail
-
-            if pnl <= self.cutoff:
-                return self.recalibrate()
+            if net_pnl > self.new_max:
+                self.new_max = net_pnl
+                self.cutoff = self.new_max * (1 - self.trail / 100.0)
+            elif self.cutoff is not None and net_pnl <= self.cutoff:
+                # Trigger recalibration → will return True from now on (for 60 sec)
+                self.recalibrate(current_time)
+                return True  # return True immediately
 
         return False
 
-    def recalibrate(self) -> bool:
-        """
-        Trigger recalibration event (when cutoff hit).
-        """
-        self.last_recalibration_time = time.time()
-        self.is_active = False
-        self.in_recalibration = True  # signal stays True during cooldown
-        self.new_max = self.pnl
-        self.cutoff = None
-        return True
-
-    def _activate_trailing(self):
-        """Activate the trailing logic once threshold is crossed."""
+    def _activate_trailing(self, pnl: float):
         self.is_active = True
-        self.new_max = self.pnl
-        self.cutoff = self.new_max - self.trail
+        self.new_max = pnl
+        self.cutoff = self.new_max * (1 - self.trail / 100.0)
 
-    def _can_recalibrate(self) -> bool:
-        """Whether we can start a new recalibration."""
-        return (time.time() - self.last_recalibration_time) > self.cooldown_period
+    def recalibrate(self, current_time: float):
+        self.is_active = False
+        self.in_recalibration = True
+        self._recal_start_time = current_time
+        self.new_max = self.last_pnl
+        self.cutoff = None
 
-    def _cooldown_expired(self) -> bool:
-        """Whether the cooldown phase has finished."""
-        return (time.time() - self.last_recalibration_time) >= self.cooldown_period
+    def exit_recalibration(self):
+        self.in_recalibration = False
+        self._recal_start_time = None
 
-    def status(self) -> dict:
-        """Snapshot of state for monitoring/logging."""
-        cooldown_remaining = max(
-            0, self.cooldown_period - (time.time() - self.last_recalibration_time)
-        )
+    def recalibration_status(self) -> dict:
+        elapsed = time.time() - self._recal_start_time if self._recal_start_time else None
         return {
-            "pnl": self.pnl,
             "is_active": self.is_active,
             "in_recalibration": self.in_recalibration,
-            "new_max": self.new_max,
-            "cutoff": self.cutoff,
-            "recalibrate_at": self.recalibrate_at,
-            "trail": self.trail,
-            "cooldown_remaining": cooldown_remaining,
+            "elapsed_sec": elapsed,
+            "cutoff": self.cutoff
         }
