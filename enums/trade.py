@@ -7,6 +7,15 @@ class TradeDirection(Enum):
     NEUTRAL = "NEUTRAL"
     EXIT_BUY = "EXIT_BUY"
     EXIT_SELL = "EXIT_SELL"
+
+    def exit_direction(self):
+        if self == TradeDirection.BUY:
+            return TradeDirection.EXIT_BUY
+        elif self == TradeDirection.SELL:
+            return TradeDirection.EXIT_SELL
+        else:
+            return TradeDirection.NEUTRAL
+
     
     
 class ExitType(Enum):

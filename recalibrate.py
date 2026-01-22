@@ -1,11 +1,12 @@
 import time
 
 class TrailRecalibration:
-    def __init__(self, profit_percentage: float, trail: float, recal_cooldown_sec: float = 60.0):
+    def __init__(self, profit_percentage: float, trail: float, recal_cooldown_sec: float = 60.0, min_recal_pnl : float = 100.0):
         self.profit_percentage = profit_percentage
         self.trail = trail
         self.recal_cooldown_sec = recal_cooldown_sec
-        
+        self.min_recal_pnl = min_recal_pnl
+
         self.is_active = False
         self.in_recalibration = False
         self._recal_start_time = None
@@ -51,7 +52,7 @@ class TrailRecalibration:
             if net_pnl > self.new_max:
                 self.new_max = net_pnl
                 self.cutoff = self.new_max * (1 - self.trail / 100.0)
-            elif self.cutoff is not None and net_pnl <= self.cutoff:
+            elif ( self.cutoff is not None and net_pnl >= self.min_recal_pnl  and net_pnl <= self.cutoff):
                 # Trigger recalibration → will return True from now on (for 60 sec)
                 self.recalibrate(current_time)
                 return True  # return True immediately

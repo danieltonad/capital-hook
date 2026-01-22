@@ -17,8 +17,8 @@ class Memory(TrailRecalibration):
         self.preferences: dict = {}
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
-        self.profit_percentage: int = 70  # profit percentage for recalibration
-        self.trail: int = 5   # trail percentage range for recalibration
+        self.profit_percentage: int = 75  # profit percentage for recalibration
+        self.trail: int = 15   # trail percentage range for recalibration
         super().__init__(profit_percentage=self.profit_percentage, trail=self.trail)
 
 

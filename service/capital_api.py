@@ -144,6 +144,18 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
         return False
     
 
+async def confirm_trade_closed(epic: str, deal_id: str,) -> bool:
+    try:
+        await asyncio.sleep(3)
+        open_positions = await get_open_positions()
+        for position in open_positions:
+            if position["epic"] == epic and position["deal_id"] == deal_id:
+                return False
+        return True
+    except Exception as e:
+        await Logger.app_log(title="CONFIRM_CLOSE_ERR", message=str(e))
+        return False
+
 
 async def close_trade(epic: str, size: float, deal_id: str, position_mode: TradeMode, retry: int = 0) -> bool:
     try:
@@ -159,18 +171,24 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
                 title="CLOSE_SUCCESS",
                 message=f"Closed {size} of {epic}: {data}"
             )
+
+            close_deal_id = data.get("dealReference", False)
+            if close_deal_id:
+                raise ValueError(f"Trade still open: {close_deal_id}")
+            
+            if not await confirm_trade_closed(epic, deal_id):
+                raise ValueError("Trade not closed yet")
+            
             memory.remove_deal_id(deal_id)  # Remove deal ID from settings
             await delete_position(deal_id) # remove position from DB if already closed
-
-            return data.get("dealReference", False)
-
+            
         raise ValueError(f"Failed to close trade: {response.status_code} => {response.text}")
     
     except Exception as e:
         await Logger.app_log(title=f"{epic}_CLOSE_TRADE_ERR", message=str(e))
         if retry < settings.MAX_RETRY_ATTEMPTS:
             await asyncio.sleep(settings.RETRY_SLEEP_TIME)
-            return await close_trade(epic, size, deal_id, retry + 1)
+            return await close_trade(epic, size, deal_id, position_mode, retry + 1)
         return False
         
    
