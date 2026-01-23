@@ -181,6 +181,8 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
             
             memory.remove_deal_id(deal_id)  # Remove deal ID from settings
             await delete_position(deal_id) # remove position from DB if already closed
+
+            return True
             
         raise ValueError(f"Failed to close trade: {response.status_code} => {response.text}")
     
