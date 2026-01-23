@@ -173,7 +173,7 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
             )
 
             close_deal_id = data.get("dealReference", False)
-            if close_deal_id:
+            if not close_deal_id:
                 raise ValueError(f"Trade still open: {close_deal_id}")
             
             if not await confirm_trade_closed(epic, deal_id):

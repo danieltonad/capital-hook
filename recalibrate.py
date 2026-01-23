@@ -1,7 +1,7 @@
 import time
 
 class TrailRecalibration:
-    def __init__(self, profit_percentage: float, trail: float, recal_cooldown_sec: float = 60.0, min_recal_pnl : float = 100.0):
+    def __init__(self, profit_percentage: float, trail: float, recal_cooldown_sec: float = 60.0, min_recal_pnl : float = 200.0):
         self.profit_percentage = profit_percentage
         self.trail = trail
         self.recal_cooldown_sec = recal_cooldown_sec
