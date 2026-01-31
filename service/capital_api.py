@@ -36,12 +36,21 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
             if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
                 return position["deal_id"]
             
-        if retry < 5:
+        if retry < 2:
             retry += 1
             await asyncio.sleep(1)
             return await get_epic_deal_id(epic, size, trade_direction, retry)
+        
 
+        # deal id make up
+        deal_ids = set([pos["deal_id"] for pos in open_positions])
+        left_ids = memory.deal_ids - deal_ids
+        if left_ids:
+            for position in open_positions:
+                if position["deal_id"] in left_ids and position["epic"] == epic and float(position["size"]) and position["direction"] == trade_direction.value:
+                    return position["deal_id"]
         return None
+    
     except Exception as e:
         await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
         pass
@@ -448,7 +457,7 @@ async def portfolio_balance():
         header = memory.capital_auth_header
         response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=header)
         if response.status_code == 200:
-            data = response.json()
+            data = await response.json()
             portfolio = data["accounts"][0]
             memory.portfolio = portfolio
             return portfolio

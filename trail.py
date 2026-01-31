@@ -49,3 +49,6 @@ class TrailingSL:
             "cutoff": self.cutoff,
             "active_stop": self.cutoff if self.trailing_active else None,
         }
+
+    def is_trailing_active(self) -> bool:
+        return self.trailing_active

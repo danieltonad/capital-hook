@@ -4,5 +4,6 @@ env
 *.log
 __pycache__
 *.pyc
+*.json
 test.py
 start.py
