@@ -5,11 +5,13 @@ from recalibrate import TrailRecalibration
 
 
 class Memory(TrailRecalibration):
+    capital_account_id: str
 
     def __init__(self):
         self.positions: dict = {TradeMode.DEMO.value: {}, TradeMode.LIVE.value: {}}
         self.deal_ids: set = set()
         self.capital_auth_header: dict = {}
+        self.capital_account_id = None
         self.epics: list = []
         self.trading_hours: dict = {}
         self.instruments: dict = {}

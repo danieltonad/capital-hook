@@ -26,6 +26,7 @@ class Settings:
     CAPITAL_IDENTITY: str = os.getenv("CAPITAL_IDENTITY")
     CAPITAL_PASSWORD: str = os.getenv("CAPITAL_PASSWORD")
     CAPITAL_API_KEY: str =  os.getenv("CAPITAL_API_KEY")
+    CAPITAL_ACCOUNT_NO: int = int(os.getenv("CAPITAL_ACCOUNT_NO", 0))
     
     TRADE_MODE: TradeMode
     

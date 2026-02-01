@@ -21,12 +21,45 @@ async def update_auth_header() -> None:
         CST = header.get("CST")
         X_SECURITY_TOKEN = header.get("X-SECURITY-TOKEN")
         # print(CST, X_SECURITY_TOKEN)
-        memory.update_capital_auth_header({'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 'CST': CST})
+        memory.update_capital_auth_header({
+            'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 
+            'CST': CST
+            })
         
+        # switch to active account
+        if settings.CAPITAL_ACCOUNT_NO:
+            if not memory.capital_account_id:
+                memory.capital_account_id = await get_account_id()
+                if not memory.capital_account_id:
+                    await Logger.app_log(title="ACCOUNT_ID_ERR", message="Could not fetch account ID -> Using default account")
+                    return
+                
+            payload = {
+                "accountId": memory.capital_account_id
+            }
+            response = await settings.session.put(
+                f"{settings.get_capital_host()}/api/v1/session",
+                headers=memory.capital_auth_header,
+                json=payload
+            )
+
     except Exception as e:
         await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
         await asyncio.sleep(100)
         return await update_auth_header()
+    
+
+async def get_account_id() -> str:
+    try:
+        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=memory.capital_auth_header)
+        if response.status_code == 200:
+            data = response.json()
+            account = data["accounts"]
+            return account[settings.CAPITAL_ACCOUNT_NO].get("accountId", None)
+    except Exception as e:
+        await Logger.app_log(title="FETCH_ACCOUNT_ID_ERR", message=str(e))
+        return None
+    
         
         
 async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> str:
@@ -44,7 +77,7 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
 
         # deal id make up
         deal_ids = set([pos["deal_id"] for pos in open_positions])
-        left_ids = memory.deal_ids - deal_ids
+        left_ids = deal_ids - memory.deal_ids
         if left_ids:
             for position in open_positions:
                 if position["deal_id"] in left_ids and position["epic"] == epic and float(position["size"]) and position["direction"] == trade_direction.value:
@@ -125,7 +158,6 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
             "direction": trade_direction.value,
             "size": str(size),  # Updated to "size" per docs
         }
-
         response = await settings.session.post(
             f"{settings.get_capital_host()}/api/v1/positions",
             headers= memory.capital_auth_header,
@@ -454,11 +486,10 @@ async def is_market_eow_close(epic: str, min: int = 2) -> bool:
 
 async def portfolio_balance():
     try:
-        header = memory.capital_auth_header
-        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=header)
+        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=memory.capital_auth_header)
         if response.status_code == 200:
-            data = await response.json()
-            portfolio = data["accounts"][0]
+            data = response.json()
+            portfolio = data["accounts"][settings.CAPITAL_ACCOUNT_NO]
             memory.portfolio = portfolio
             return portfolio
     except Exception as e:
