@@ -128,7 +128,7 @@ class ResumeTradeExecution:
             return True, profit_loss, percentage
 
         # reclibrate
-        elif ExitType.RECALIBRATE in self.exit_criteria and memory.recalibrate_trade() and not self.trailing_stop.is_trailing_active():
+        elif ExitType.RECALIBRATE in self.exit_criteria and memory.recalibrate_trade():
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.RECALIBRATE
             await self.log_trade("closed")
