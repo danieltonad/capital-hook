@@ -3,6 +3,7 @@ from enums.trade import TradeDirection, TradeMode
 from memory import memory, settings
 from logger import Logger
 from datetime import datetime, timedelta
+from typing import Tuple
 
 async def update_auth_header() -> None:
     try:
@@ -62,12 +63,12 @@ async def get_account_id() -> str:
     
         
         
-async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> str:
+async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> Tuple[str | None, float | None]:
     try:
         open_positions = await get_open_positions()
         for position in open_positions:
             if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
-                return position["deal_id"]
+                return position["deal_id"], float(position["open_price"])
             
         if retry < 2:
             retry += 1
@@ -81,8 +82,8 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
         if left_ids:
             for position in open_positions:
                 if position["deal_id"] in left_ids and position["epic"] == epic and float(position["size"]) and position["direction"] == trade_direction.value:
-                    return position["deal_id"]
-        return None
+                    return position["deal_id"], float(position["open_price"])
+        return None, None
     
     except Exception as e:
         await Logger.app_log(title="DEAL_ID_ERR", message=str(e))
@@ -150,7 +151,7 @@ async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
             return 0.0, 0.0
     
     
-async def open_trade(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> str | bool:
+async def open_trade(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> Tuple[str | None, float | None]:
     try:
         # Build payload
         payload = {
@@ -166,7 +167,7 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
         if response.status_code == 200:
             data = response.json()
             reference = data["dealReference"]
-            deal_id = await get_epic_deal_id(epic, size, trade_direction)
+            deal_id, open_price = await get_epic_deal_id(epic, size, trade_direction)
             memory.update_deal_id(deal_id) # Update deal ID in memory
             if deal_id:
                 await Logger.app_log(
@@ -176,13 +177,13 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
             else:
                 raise ValueError("Could not retrieve deal ID")
             
-            return deal_id
+            return deal_id, open_price
     except Exception as e:
         await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
         if retry < settings.MAX_RETRY_ATTEMPTS:
             await asyncio.sleep(settings.RETRY_SLEEP_TIME)
             return await open_trade(epic, size, trade_direction, retry + 1)
-        return False
+        return False, None
     
 
 async def confirm_trade_closed(epic: str, deal_id: str,) -> bool:

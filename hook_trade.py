@@ -202,7 +202,7 @@ class HookedTradeExecution:
             self.__risk_reward_setup()
             
             # open position
-            self.deal_id = await open_trade(epic=self.epic, size=self.trade_size, trade_direction=self.trade_direction)
+            self.deal_id, self.entry_price = await open_trade(epic=self.epic, size=self.trade_size, trade_direction=self.trade_direction)
             if not self.deal_id:
                 raise Exception("Market Closed")
             
