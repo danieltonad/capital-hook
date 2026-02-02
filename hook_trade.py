@@ -202,13 +202,13 @@ class HookedTradeExecution:
             self.__risk_reward_setup()
             
             # open position
-            self.deal_id, self.entry_price = await open_trade(epic=self.epic, size=self.trade_size, trade_direction=self.trade_direction)
+            self.deal_id, open_price = await open_trade(epic=self.epic, size=self.trade_size, trade_direction=self.trade_direction)
             if not self.deal_id:
                 raise Exception("Market Closed")
             
             await self.log_trade("opened")
             self.opened_trade_at = datetime.now()
-            
+            self.entry_price = open_price
             # save position
             await save_position(id=self.deal_id, epic=self.epic, size=self.trade_size, hook_name=self.hook_name, direction=self.trade_direction.value, entry_price=self.entry_price, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), exit_criteria=",".join([e.value for e in self.exit_criteria]), profit_price=self.target_profit_price, loss_price=self.stop_loss_price, trail_sl=self.trail_sl, mode=self.position_mode)
                 

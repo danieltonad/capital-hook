@@ -172,7 +172,7 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
             if deal_id:
                 await Logger.app_log(
                     title=f"OPENED_{trade_direction.value}_TRADE",
-                    message=f"{size} size of {epic} ({reference})"
+                    message=f"{size} size of {epic} ({reference}) @ {open_price}"
                 )
             else:
                 raise ValueError("Could not retrieve deal ID")
