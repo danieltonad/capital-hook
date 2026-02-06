@@ -21,7 +21,7 @@ class Memory(TrailRecalibration):
         self.portfolio: dict = {}
         self.profit_percentage: int = 75  # profit percentage for recalibration
         self.trail: int = 15   # trail percentage range for recalibration
-        super().__init__(profit_percentage=self.profit_percentage, trail=self.trail, min_recal_pnl=10)
+        super().__init__(profit_percentage=self.profit_percentage, trail=self.trail, min_recal_pnl=40)
 
 
 
