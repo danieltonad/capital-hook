@@ -1,5 +1,5 @@
 import websockets, asyncio, json
-from memory import memory
+from memory import memory, TradeMode
 from logger import Logger
 from .capital_api import get_last_api_ask_bid
 
@@ -29,8 +29,8 @@ class CapitalSocket:
             ping_msg = {
                 "destination": "ping",
                 "correlationId": "ping_XGXXXTX",
-                "cst": memory.capital_auth_header["CST"],
-                "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"]
+                "cst": memory.capital_auth_header[TradeMode.LIVE.value]["CST"],
+                "securityToken": memory.capital_auth_header[TradeMode.LIVE.value]["X-SECURITY-TOKEN"]
             }
             
             if self.running:
@@ -52,8 +52,8 @@ class CapitalSocket:
             subscribe_msg = {
                 "destination": "marketData.subscribe",
                 "correlationId": f"epic_sub_{epic}",
-                "cst": memory.capital_auth_header["CST"],
-                "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"],
+                "cst": memory.capital_auth_header[TradeMode.LIVE.value]["CST"],
+                "securityToken": memory.capital_auth_header[TradeMode.LIVE.value]["X-SECURITY-TOKEN"],
                 "payload": {"epics": [epic]}
             }
             await self.websocket.send(json.dumps(subscribe_msg))
@@ -82,8 +82,8 @@ class CapitalSocket:
             unsubscribe_msg = {
                 "destination": "marketData.unsubscribe",
                 "correlationId": f"epic_sub_{epic}",
-                "cst": memory.capital_auth_header["CST"],
-                "securityToken": memory.capital_auth_header["X-SECURITY-TOKEN"],
+                "cst": memory.capital_auth_header[TradeMode.LIVE.value]["CST"],
+                "securityToken": memory.capital_auth_header[TradeMode.LIVE.value]["X-SECURITY-TOKEN"],
                 "payload": {"epics": [epic]}
             }
             await self.websocket.send(json.dumps(unsubscribe_msg))

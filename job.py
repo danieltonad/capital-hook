@@ -1,6 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from service.socket_manager import socket_manager, memory
 from service.capital_api import update_auth_header, get_epic_hours, update_markets
+from settings import TradeMode
 
 
 
@@ -17,7 +18,8 @@ class Jobs:
         # ping socket
         scheduler.add_job(socket_manager.ping_all, "interval", minutes=5)
         # update auth header
-        scheduler.add_job(update_auth_header, "interval", minutes=5)
+        scheduler.add_job(update_auth_header, "interval", minutes=5, args=[TradeMode.DEMO])
+        scheduler.add_job(update_auth_header, "interval", minutes=5, args=[TradeMode.LIVE])
         # update markets
         scheduler.add_job(update_markets, "interval", hours=5)
         # update epic hours
@@ -32,36 +34,38 @@ class Jobs:
     async def resume_trades(self):
         from database import get_positions, delete_position
         from service.capital_api import get_open_positions, memory
-        from model import PositionsModel
+        from model import PositionsModel, TradeMode
         from resume_trade import ResumeTradeExecution
         import asyncio
 
-        deal_ids = [pos['deal_id'] for pos in await get_open_positions()]
-        
-        positions: list[PositionsModel] = await get_positions()
-            
-        for position in positions:
-            if position.id in deal_ids:
-                memory.update_trading_view_hooked_trades(epic=position.epic, direction=position.direction, hook_name=position.hook_name)
-                resume_trade = ResumeTradeExecution(
-                    epic=position.epic,
-                    size=position.size,
-                    deal_id=position.id,
-                    entry_price=position.entry_price,
-                    entry_date=position.entry_date,
-                    trade_direction=position.direction,
-                    profit_price=position.profit_price,
-                    loss_price=position.loss_price,
-                    hook_name=position.hook_name,
-                    exit_criteria=position.exit_criteria,
-                    trail_sl=position.trail_sl
-                )
-                print(f"Resuming {position.epic} {position.direction.value} trade on [{position.hook_name}]")
-                asyncio.create_task(resume_trade.execute_trade())
-                await asyncio.sleep(2) # slight delay to avoid overload
-            else:
-                print(f"Position {position.id} no longer active. Deleting from DB.")
-                await delete_position(position.id)
+        for trade_mode in [TradeMode.DEMO, TradeMode.LIVE]:
+            print(f"--- {trade_mode.value.upper()} mode trades ---")
+            deal_ids = [pos['deal_id'] for pos in await get_open_positions(trade_mode=trade_mode)]
+            positions: list[PositionsModel] = await get_positions(trade_mode)
+                
+            for position in positions:
+                if position.id in deal_ids:
+                    memory.update_trading_view_hooked_trades(epic=position.epic, direction=position.direction, hook_name=position.hook_name, trade_mode=position.mode)
+                    resume_trade = ResumeTradeExecution(
+                        epic=position.epic,
+                        size=position.size,
+                        deal_id=position.id,
+                        entry_price=position.entry_price,
+                        entry_date=position.entry_date,
+                        trade_direction=position.direction,
+                        profit_price=position.profit_price,
+                        loss_price=position.loss_price,
+                        hook_name=position.hook_name,
+                        exit_criteria=position.exit_criteria,
+                        trail_sl=position.trail_sl,
+                        trade_mode=position.mode
+                    )
+                    print(f"Resuming {position.epic} {position.direction.value} trade on [{position.hook_name}]")
+                    asyncio.create_task(resume_trade.execute_trade())
+                    await asyncio.sleep(2) # slight delay to avoid overload
+                else:
+                    print(f"Position {position.id} no longer active. Deleting from DB.")
+                    await delete_position(position.id)
 
 
 

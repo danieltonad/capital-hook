@@ -15,6 +15,10 @@ class TrailRecalibration:
         self.cutoff = None
         self.last_pnl = 0.0
 
+        # 
+        self.profit_pct = 0.0
+        self.loss_pct = 0.0
+
     def pnl_percentage_ratio(self, profit: float, loss: float) -> tuple[float, float]:
         abs_p = abs(profit)
         abs_l = abs(loss)
@@ -29,7 +33,7 @@ class TrailRecalibration:
 
         net_pnl = gross_profit - gross_loss
         self.last_pnl = net_pnl
-        profit_pct, _ = self.pnl_percentage_ratio(gross_profit, gross_loss)
+        self.profit_pct, self.loss_pct = self.pnl_percentage_ratio(gross_profit, gross_loss)
 
         # 🔹 Auto-exit recalibration after cooldown
         if self.in_recalibration and self._recal_start_time:
@@ -44,7 +48,7 @@ class TrailRecalibration:
         # 🔹 If we're here, NOT in recalibration
         # Check activation
         if not self.is_active:
-            if self.profit_percentage and profit_pct >= self.profit_percentage:
+            if self.profit_percentage and self.profit_pct >= self.profit_percentage:
                 self._activate_trailing(net_pnl)
 
         # 🔹 Trailing monitoring
@@ -81,5 +85,7 @@ class TrailRecalibration:
             "is_active": self.is_active,
             "in_recalibration": self.in_recalibration,
             "elapsed_sec": elapsed,
-            "cutoff": self.cutoff
+            "cutoff": self.cutoff,
+            "loss_pct": self.loss_pct,
+            "profit_pct": self.profit_pct
         }

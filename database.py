@@ -168,7 +168,7 @@ async def get_trade_mode() -> TradeMode:
             
 
 
-async def get_positions() -> list:
+async def get_positions(mode: TradeMode) -> list:
     from memory import settings
     from enums.trade import ExitType
     from model import PositionsModel
@@ -176,7 +176,7 @@ async def get_positions() -> list:
     async with aiosqlite.connect(settings.DB_PATH) as db:
         async with db.cursor() as cursor:
             await cursor.execute(
-                "SELECT * FROM positions ORDER BY entry_date DESC"
+                "SELECT * FROM positions WHERE mode = ? ORDER BY entry_date DESC", (mode.value,)
             )
             rows = await cursor.fetchall()
             for row in rows:
@@ -225,6 +225,7 @@ async def delete_position(position_id: str) -> None:
                     position_id,
                 ))
         await db.commit()
+    print(f"Position {position_id} deleted from database.")
 
 
 
@@ -234,3 +235,4 @@ async def clear_config() -> None:
         async with db.cursor() as cursor:
             await cursor.execute("DELETE FROM bot_config")
         await db.commit()
+    print("Bot configuration cleared from database.")

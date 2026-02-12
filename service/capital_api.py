@@ -5,7 +5,7 @@ from logger import Logger
 from datetime import datetime, timedelta
 from typing import Tuple
 
-async def update_auth_header() -> None:
+async def update_auth_header(mode: TradeMode) -> None:
     try:
         payload = json.dumps({
         "identifier": settings.CAPITAL_IDENTITY,
@@ -16,7 +16,7 @@ async def update_auth_header() -> None:
             'X-CAP-API-KEY': settings.CAPITAL_API_KEY,
             'Content-Type': 'application/json'
         }
-        response = await settings.session.post(f"{settings.get_capital_host()}/api/v1/session", headers=headers, data=payload)
+        response = await settings.session.post(f"{settings.get_capital_host(mode)}/api/v1/session", headers=headers, data=payload)
         # print(response.status_code ,response.json())
         header: dict = response.headers
         CST = header.get("CST")
@@ -25,12 +25,12 @@ async def update_auth_header() -> None:
         memory.update_capital_auth_header({
             'X-SECURITY-TOKEN': X_SECURITY_TOKEN, 
             'CST': CST
-            })
+            }, mode)
         
         # switch to active account
         if settings.CAPITAL_ACCOUNT_NO:
             if not memory.capital_account_id:
-                memory.capital_account_id = await get_account_id()
+                memory.capital_account_id = await get_account_id(mode)
                 if not memory.capital_account_id:
                     await Logger.app_log(title="ACCOUNT_ID_ERR", message="Could not fetch account ID -> Using default account")
                     return
@@ -39,20 +39,20 @@ async def update_auth_header() -> None:
                 "accountId": memory.capital_account_id
             }
             response = await settings.session.put(
-                f"{settings.get_capital_host()}/api/v1/session",
-                headers=memory.capital_auth_header,
+                f"{settings.get_capital_host(mode)}/api/v1/session",
+                headers=memory.capital_auth_header[mode.value],
                 json=payload
             )
 
     except Exception as e:
         await Logger.app_log(title="UPDATE_AUTH_HEADER_ERR", message=str(e))
-        await asyncio.sleep(100)
-        return await update_auth_header()
+        await asyncio.sleep(10)
+        return await update_auth_header(mode)
     
 
-async def get_account_id() -> str:
+async def get_account_id(mode: TradeMode) -> str:
     try:
-        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=memory.capital_auth_header)
+        response = await settings.session.get(f"{settings.get_capital_host(mode)}/api/v1/accounts", headers=memory.capital_auth_header[mode.value])
         if response.status_code == 200:
             data = response.json()
             account = data["accounts"]
@@ -63,22 +63,22 @@ async def get_account_id() -> str:
     
         
         
-async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> Tuple[str | None, float | None]:
+async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirection, trade_mode: TradeMode, retry: int = 0) -> Tuple[str | None, float | None]:
     try:
-        open_positions = await get_open_positions()
+        open_positions = await get_open_positions(trade_mode)
         for position in open_positions:
-            if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids:
+            if position["epic"] == epic and float(position["size"]) == float(size) and position["direction"] == trade_direction.value and position["deal_id"] not in memory.deal_ids[trade_mode.value]:
                 return position["deal_id"], float(position["open_price"])
             
         if retry < 2:
             retry += 1
             await asyncio.sleep(1)
-            return await get_epic_deal_id(epic, size, trade_direction, retry)
+            return await get_epic_deal_id(epic, size, trade_direction, trade_mode, retry)
         
 
         # deal id make up
         deal_ids = set([pos["deal_id"] for pos in open_positions])
-        left_ids = deal_ids - memory.deal_ids
+        left_ids = deal_ids - memory.deal_ids[trade_mode.value]
         if left_ids:
             for position in open_positions:
                 if position["deal_id"] in left_ids and position["epic"] == epic and float(position["size"]) and position["direction"] == trade_direction.value:
@@ -90,11 +90,11 @@ async def get_epic_deal_id(epic: str, size: float, trade_direction: TradeDirecti
         pass
     
     
-async def get_open_positions() -> list:
+async def get_open_positions(trade_mode: TradeMode) -> list:
     try:
         response = await settings.session.get(
-            f"{settings.get_capital_host()}/api/v1/positions",
-            headers = memory.capital_auth_header 
+            f"{settings.get_capital_host(trade_mode)}/api/v1/positions",
+            headers = memory.capital_auth_header[trade_mode.value]
         )
         if response.status_code == 200:
             data = response.json()
@@ -126,8 +126,8 @@ async def get_open_positions() -> list:
 async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
         """Fetch the latest ask and bid price from REST API using httpx."""
         try:
-            url = f"{settings.get_capital_host()}/api/v1/markets/{epic}"
-            response = await settings.session.get(url, headers=memory.capital_auth_header)
+            url = f"{settings.get_capital_host(TradeMode.LIVE)}/api/v1/markets/{epic}"
+            response = await settings.session.get(url, headers=memory.capital_auth_header[TradeMode.LIVE.value])
             
             if response.status_code != 200:
                 await Logger.app_log(
@@ -151,7 +151,7 @@ async def get_last_api_ask_bid(epic: str) -> tuple[float, float]:
             return 0.0, 0.0
     
     
-async def open_trade(epic: str, size: float, trade_direction: TradeDirection, retry: int = 0) -> Tuple[str | None, float | None]:
+async def open_trade(epic: str, size: float, trade_direction: TradeDirection, trade_mode: TradeMode, retry: int = 0) -> Tuple[str | None, float | None]:
     try:
         # Build payload
         payload = {
@@ -160,15 +160,15 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
             "size": str(size),  # Updated to "size" per docs
         }
         response = await settings.session.post(
-            f"{settings.get_capital_host()}/api/v1/positions",
-            headers= memory.capital_auth_header,
+            f"{settings.get_capital_host(trade_mode)}/api/v1/positions",
+            headers= memory.capital_auth_header[trade_mode.value],
             json=payload
         )
         if response.status_code == 200:
             data = response.json()
             reference = data["dealReference"]
-            deal_id, open_price = await get_epic_deal_id(epic, size, trade_direction)
-            memory.update_deal_id(deal_id) # Update deal ID in memory
+            deal_id, open_price = await get_epic_deal_id(epic, size, trade_direction, trade_mode)
+            memory.update_deal_id(deal_id, trade_mode) # Update deal ID in memory
             if deal_id:
                 await Logger.app_log(
                     title=f"OPENED_{trade_direction.value}_TRADE",
@@ -182,14 +182,14 @@ async def open_trade(epic: str, size: float, trade_direction: TradeDirection, re
         await Logger.app_log(title=f"{epic}_OPEN_TRADE_ERR", message=str(e))
         if retry < settings.MAX_RETRY_ATTEMPTS:
             await asyncio.sleep(settings.RETRY_SLEEP_TIME)
-            return await open_trade(epic, size, trade_direction, retry + 1)
+            return await open_trade(epic, size, trade_direction, trade_mode, retry + 1)
         return False, None
     
 
-async def confirm_trade_closed(epic: str, deal_id: str,) -> bool:
+async def confirm_trade_closed(epic: str, deal_id: str, trade_mode: TradeMode) -> bool:
     try:
         await asyncio.sleep(3)
-        open_positions = await get_open_positions()
+        open_positions = await get_open_positions(trade_mode)
         for position in open_positions:
             if position["epic"] == epic and position["deal_id"] == deal_id:
                 return False
@@ -205,7 +205,7 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
         
         response = await settings.session.delete(
             f"{settings.get_capital_host(position_mode)}/api/v1/positions/{deal_id}",
-            headers= memory.capital_auth_header,
+            headers= memory.capital_auth_header[position_mode.value],
         )
         if response.status_code == 200:
             data = response.json()
@@ -218,10 +218,10 @@ async def close_trade(epic: str, size: float, deal_id: str, position_mode: Trade
             if not close_deal_id:
                 raise ValueError(f"Trade still open: {close_deal_id}")
             
-            if not await confirm_trade_closed(epic, deal_id):
+            if not await confirm_trade_closed(epic, deal_id, position_mode):
                 raise ValueError("Trade not closed yet")
             
-            memory.remove_deal_id(deal_id)  # Remove deal ID from settings
+            memory.remove_deal_id(deal_id, position_mode)  # Remove deal ID from settings
             await delete_position(deal_id) # remove position from DB if already closed
 
             return True
@@ -243,7 +243,7 @@ async def update_markets() -> None:
         instruments = {} # Use a set to avoid duplicates
         response = await settings.session.get(
             f"{settings.get_capital_host()}/api/v1/markets",
-            headers=memory.capital_auth_header
+            headers=memory.capital_auth_header[TradeMode.LIVE.value]
         )
         if response.status_code == 200:
             data = response.json()
@@ -269,7 +269,7 @@ async def get_account_preferences() -> dict:
     try:
         response = await settings.session.get(
             f"{settings.get_capital_host()}/api/v1/accounts/preferences",
-            headers=memory.capital_auth_header
+            headers=memory.capital_auth_header[TradeMode.LIVE.value]
         )
         if response.status_code == 200:
             data = response.json()
@@ -284,45 +284,7 @@ async def get_account_preferences() -> dict:
         await Logger.app_log(title="PREF_GET_ERR", message=str(e))
         return {}
         
-        
-        
-async def set_account_preferences(leverages: dict = None, hedging_mode: bool = None) -> bool:
-    try:
-        # Get current preferences first to modify only what’s provided
-        current_prefs = await get_account_preferences()
-        if not current_prefs:
-            await Logger.app_log(
-                title="PREF_SET_FAIL",
-                message="Couldn’t fetch current preferences"
-            )
-            return False
 
-        # Build payload with current values as fallback
-        payload = {
-            "leverages": leverages if leverages is not None else current_prefs.get("leverages", {}),
-            "hedgingMode": hedging_mode if hedging_mode is not None else current_prefs.get("hedgingMode", False)
-        }
-    
-        response = await settings.session.put(
-            f"{settings.get_capital_host()}/api/v1/accounts/preferences",
-            headers= memory.capital_auth_header,
-            json=payload
-        )
-        if response.status_code == 200:
-            await Logger.app_log(
-                title="PREF_SET_SUCCESS",
-                message=f"Updated preferences: {payload}"
-            )
-            return True
-        else:
-            await Logger.app_log(
-                title="PREF_SET_FAIL",
-                message=f"Status {response.status_code}: {response.text}"
-            )
-            return False
-    except Exception as e:
-        await Logger.app_log(title="PREF_SET_ERR", message=str(e))
-        return False 
     
     
     
@@ -330,7 +292,7 @@ async def get_epic_hours(epic: str):
         try:
             response = await settings.session.get(
                 f"{settings.get_capital_host()}/api/v1/markets/{epic}", 
-                headers= memory.capital_auth_header,
+                headers= memory.capital_auth_header[TradeMode.LIVE.value],
                 )
             if response.status_code != 200:
                 await Logger.app_log(
@@ -486,8 +448,9 @@ async def is_market_eow_close(epic: str, min: int = 2) -> bool:
         
 
 async def portfolio_balance():
+    from settings import settings
     try:
-        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=memory.capital_auth_header)
+        response = await settings.session.get(f"{settings.get_capital_host()}/api/v1/accounts", headers=memory.capital_auth_header[settings.TRADE_MODE.value])
         if response.status_code == 200:
             data = response.json()
             portfolio = data["accounts"][settings.CAPITAL_ACCOUNT_NO]

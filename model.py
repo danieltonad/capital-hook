@@ -13,6 +13,7 @@ class TradingViewWebhookModel(BaseModel):
     loss: Annotated[int, conint(ge=5)] 
     trail_sl: Optional[Annotated[int, conint(ge=5)]] = None
     exit_criteria: List[ExitType]
+    trade_mode: TradeMode
 
 
 

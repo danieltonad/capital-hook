@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from routes.api import api
 from routes.webhook import webhook
 from routes.view import view
-from memory import memory, settings
+from memory import memory, settings, TradeMode
 from service.capital_api import get_account_preferences, update_markets,update_auth_header
 from job import jobs
 
@@ -22,7 +22,8 @@ async def startup_event():
     
     
     # update market data
-    await update_auth_header()
+    await update_auth_header(TradeMode.DEMO)
+    await update_auth_header(TradeMode.LIVE)
     await update_markets()
     print(f"{len(memory.epics):,} market data updated")
     

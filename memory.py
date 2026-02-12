@@ -4,14 +4,14 @@ from settings import settings, TradeMode
 from recalibrate import TrailRecalibration
 
 
-class Memory(TrailRecalibration):
-    capital_account_id: str
+class Memory:
+    capital_account_id: int
 
     def __init__(self):
         self.positions: dict = {TradeMode.DEMO.value: {}, TradeMode.LIVE.value: {}}
-        self.deal_ids: set = set()
-        self.capital_auth_header: dict = {}
-        self.capital_account_id = None
+        self.deal_ids: dict = {TradeMode.DEMO.value: set(), TradeMode.LIVE.value: set()}
+        self.capital_auth_header: dict = {TradeMode.DEMO.value: {}, TradeMode.LIVE.value: {}}
+        self.capital_account_id = 0
         self.epics: list = []
         self.trading_hours: dict = {}
         self.instruments: dict = {}
@@ -19,9 +19,10 @@ class Memory(TrailRecalibration):
         self.preferences: dict = {}
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
-        self.profit_percentage: int = 75  # profit percentage for recalibration
-        self.trail: int = 15   # trail percentage range for recalibration
-        super().__init__(profit_percentage=self.profit_percentage, trail=self.trail, min_recal_pnl=40)
+        self.recalibrate: dict = {
+            TradeMode.LIVE.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=20),
+            TradeMode.DEMO.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=200)
+        }
 
 
 
@@ -31,11 +32,10 @@ class Memory(TrailRecalibration):
                 return mode.value
         return None
     
-    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str, entry_price: float):
+    def update_position(self, deal_id: str, pnl: float, trade_direction: TradeDirection, epic: str, trade_size: float, hook_name: str, entry_date: str, entry_price: float, trade_mode: TradeMode):
         """Update or add positions."""
-        mode = settings.TRADE_MODE.value
         if not self.get_trade_mode_for_deal_id(deal_id):
-            self.positions[mode][deal_id] = {
+            self.positions[trade_mode.value][deal_id] = {
                 "epic": epic,
                 "pnl": pnl,
                 "trade_direction": trade_direction.value,
@@ -50,12 +50,13 @@ class Memory(TrailRecalibration):
         
     def manual_close_position(self, deal_id: str):
         """Mark a position as closed manually by setting exit_trade to True."""
-        if deal_id in self.positions[settings.TRADE_MODE.value]:
-            self.positions[settings.TRADE_MODE.value][deal_id]["exit_trade"] = True
+        mode = self.get_trade_mode_for_deal_id(deal_id)
+        if mode and deal_id in self.positions[mode]:
+            self.positions[mode][deal_id]["exit_trade"] = True
 
-    def manual_trade_exit_signal(self, deal_id: str) -> bool:
+    def manual_trade_exit_signal(self, deal_id: str, trade_mode: TradeMode) -> bool:
         """Check if a trade exit signal is set for a given deal_id."""
-        return self.positions[settings.TRADE_MODE.value].get(deal_id, {}).get("exit_trade", False)
+        return self.positions[trade_mode.value].get(deal_id, {}).get("exit_trade", False)
 
 
     def remove_position(self, deal_id: str):
@@ -64,25 +65,23 @@ class Memory(TrailRecalibration):
         if mode and deal_id in self.positions[mode]:
             del self.positions[mode][deal_id]
 
-    
-    def has_epic_in_positions(self, epic: str) -> bool:
+    def has_epic_in_positions(self, epic: str, trade_mode: TradeMode) -> bool:
         """Check if any position exists for a given epic."""
-        mode = settings.TRADE_MODE.value
-        return any(pos["epic"] == epic for pos in self.positions[mode].values())
+        return any(pos["epic"] == epic for pos in self.positions[trade_mode.value].values())
 
 
-    def update_deal_id(self, deal_id: str):
+    def update_deal_id(self, deal_id: str, trade_mode: TradeMode):
         """Add a deal_id to the set of deal_ids."""
-        self.deal_ids.add(deal_id)
+        self.deal_ids[trade_mode.value].add(deal_id)
     
-    def remove_deal_id(self, deal_id: str):
+    def remove_deal_id(self, deal_id: str, trade_mode: TradeMode):
         """Remove a deal_id from the set of deal_ids."""
-        if deal_id in self.deal_ids:
-            self.deal_ids.remove(deal_id)
+        if deal_id in self.deal_ids[trade_mode.value]:
+            self.deal_ids[trade_mode.value].remove(deal_id)
             
-    def update_capital_auth_header(self, header: dict):
+    def update_capital_auth_header(self, header: dict, mode: TradeMode):
         """Update the authorization header for Capital API."""
-        self.capital_auth_header = header
+        self.capital_auth_header[mode.value] = header
     
     def update_epics(self, epics: list, instruments: dict):
         """Update the list of epics and their corresponding instruments."""
@@ -113,38 +112,38 @@ class Memory(TrailRecalibration):
         """Get the trade instrument for a given epic."""
         return TradeInstrument(self.instruments.get(epic, ""))
     
-    def update_trading_view_hooked_trades(self, epic: str, direction: TradeDirection, hook_name: str):
+    def update_trading_view_hooked_trades(self, epic: str, direction: TradeDirection, hook_name: str, trade_mode: TradeMode):
         """Update or add a hooked trade for a specific epic and hook name."""
-        self.hooked_trades[f"{epic}_{hook_name}"] = direction
+        self.hooked_trades[f"{epic}_{hook_name}_{trade_mode.value}"] = direction
     
-    def remove_trading_view_hooked_trades(self, epic: str, hook_name: str):
+    def remove_trading_view_hooked_trades(self, epic: str, hook_name: str, trade_mode: TradeMode):
         """Remove a hooked trade for a specific epic and hook name."""
-        self.hooked_trades.pop(f"{epic}_{hook_name}", None)
+        self.hooked_trades.pop(f"{epic}_{hook_name}_{trade_mode.value}", None)
 
     
-    def get_trading_view_hooked_trade_side(self, epic: str, hook_name) -> TradeDirection:
-        return self.hooked_trades.get(f"{epic}_{hook_name}", TradeDirection.NEUTRAL)
+    def get_trading_view_hooked_trade_side(self, epic: str, hook_name: str, trade_mode: TradeMode) -> TradeDirection:
+        return self.hooked_trades.get(f"{epic}_{hook_name}_{trade_mode.value}", TradeDirection.NEUTRAL)
     
 
-    def positions_count(self) -> int:
+    def positions_count(self, trade_mode: TradeMode) -> int:
         """Get the count of current open positions."""
-        return len(self.positions[settings.TRADE_MODE.value])
+        return len(self.positions[trade_mode.value])
     
-    def positions_pnl(self) -> float:
+    def positions_pnl(self, trade_mode: TradeMode) -> float:
         """Get the total PnL of current open positions."""
-        return sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values())
+        return sum(float(pos["pnl"]) for pos in self.positions[trade_mode.value].values())
     
-    def profits_and_losses(self) -> tuple[float, float]:
+    def profits_and_losses(self, trade_mode: TradeMode) -> tuple[float, float]:
         """Get total profits and total losses separately."""
-        total_profit = sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values() if float(pos["pnl"]) > 0)
-        total_loss = sum(float(pos["pnl"]) for pos in self.positions[settings.TRADE_MODE.value].values() if float(pos["pnl"]) < 0)
+        total_profit = sum(float(pos["pnl"]) for pos in self.positions[trade_mode.value].values() if float(pos["pnl"]) > 0)
+        total_loss = sum(float(pos["pnl"]) for pos in self.positions[trade_mode.value].values() if float(pos["pnl"]) < 0)
         return abs(total_profit), abs(total_loss)
     
 
-    def recalibrate_trade(self) -> bool:
+    def recalibrate_trade(self, trade_mode: TradeMode) -> bool:
         """Update PnL and check if recalibration trigger is met."""
-        total_profit, total_loss = self.profits_and_losses()
-        return self.update_pnl(total_profit, total_loss)
+        total_profit, total_loss = self.profits_and_losses(trade_mode)
+        return self.recalibrate[trade_mode.value].update_pnl(total_profit, total_loss)
 
     
         

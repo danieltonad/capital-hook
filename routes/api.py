@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from service.capital_api import portfolio_balance, memory
-from model import HookPayloadModel, TradeModeModel, ExitType
+from model import HookPayloadModel, TradeModeModel, ExitType, TradeMode
 from fastapi.responses import StreamingResponse
 
 
@@ -121,12 +121,12 @@ async def generate_payload(data: HookPayloadModel):
 
 
 
-@api.get("/recalibrate/status")
-async def get_recalibration_status():   
+@api.get("/recalibrate/status/{trade_mode}")
+async def get_recalibration_status(trade_mode: TradeMode):   
     """
     Get the recalibration status.
     """
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=memory.recalibration_status()
+        content=memory.recalibrate[trade_mode.value].recalibration_status()
     )

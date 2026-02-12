@@ -28,8 +28,7 @@ class ResumeTradeExecution:
     trailing_stop: TrailingSL
 
 
-    def __init__(self, epic: str, size: float, deal_id: str, entry_price: float, entry_date: str, trade_direction: TradeDirection, profit_price: int, loss_price: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int):
-        from settings import settings
+    def __init__(self, epic: str, size: float, deal_id: str, entry_price: float, entry_date: str, trade_direction: TradeDirection, profit_price: int, loss_price: int, hook_name: str, exit_criteria: List[ExitType], trail_sl: int, trade_mode: TradeMode):
         self.trade_direction = trade_direction
         self.epic = epic
         self.trade_size = size
@@ -40,7 +39,7 @@ class ResumeTradeExecution:
         self.deal_id = deal_id
         self.exit_criteria = exit_criteria
         self.opened_trade_at = datetime.strptime(entry_date, "%d %b %H:%M")
-        self.position_mode = settings.TRADE_MODE
+        self.position_mode = trade_mode
         profit = abs(profit_price - entry_price) * size
         loss = abs(entry_price - loss_price) * size
         self.trailing_stop = TrailingSL(pnl=0.0, tp=profit, sl=loss, trail_range=trail_sl)
@@ -74,7 +73,7 @@ class ResumeTradeExecution:
         
         profit_loss, percentage = self.__calculate_profit_loss(current_price)
         self.exit_price = ask if self.trade_direction == TradeDirection.BUY else bid
-        memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), hook_name=self.hook_name, entry_price=self.entry_price)
+        memory.update_position(deal_id=self.deal_id, pnl=profit_loss, trade_direction=self.trade_direction, epic=self.epic, trade_size=self.trade_size, entry_date=self.opened_trade_at.strftime("%d %b %H:%M"), hook_name=self.hook_name, entry_price=self.entry_price, trade_mode=self.position_mode)
 
         
         # reward monitor long
@@ -120,15 +119,15 @@ class ResumeTradeExecution:
             return True, profit_loss, percentage
         
         # strategy switch
-        elif ExitType.STRATEGY in self.exit_criteria and memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name) != self.trade_direction:
+        elif ExitType.STRATEGY in self.exit_criteria and memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name, self.position_mode) != self.trade_direction:
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
-            new_direction = memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name)
+            new_direction = memory.get_trading_view_hooked_trade_side(self.epic, self.hook_name, self.position_mode)
             self.exit_type = ExitType.EXIT if new_direction in [TradeDirection.EXIT_BUY, TradeDirection.EXIT_SELL] else ExitType.STRATEGY
             await self.log_trade("closed")
             return True, profit_loss, percentage
 
         # reclibrate
-        elif ExitType.RECALIBRATE in self.exit_criteria and memory.recalibrate_trade():
+        elif ExitType.RECALIBRATE in self.exit_criteria and memory.recalibrate_trade(self.position_mode):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.RECALIBRATE
             await self.log_trade("closed")
@@ -142,7 +141,7 @@ class ResumeTradeExecution:
             return True, profit_loss, percentage
         
         # manual exit
-        elif memory.manual_trade_exit_signal(self.deal_id):
+        elif memory.manual_trade_exit_signal(self.deal_id, self.position_mode):
             await close_trade(epic=self.epic, size=self.trade_size, deal_id=self.deal_id, position_mode=self.position_mode)
             self.exit_type = ExitType.USER
             await self.log_trade("closed")
@@ -175,10 +174,10 @@ class ResumeTradeExecution:
 
             # remove from hook trades when exits not on strategy
             if self.exit_type != ExitType.STRATEGY:
-                memory.remove_trading_view_hooked_trades(self.epic, self.hook_name)
+                memory.remove_trading_view_hooked_trades(self.epic, self.hook_name, self.position_mode)
 
         except Exception as err:
-            memory.remove_trading_view_hooked_trades(self.epic, self.hook_name)
+            memory.remove_trading_view_hooked_trades(self.epic, self.hook_name, self.position_mode)
             await Logger.app_log(title=f"{self.hook_name.upper()}_ERR_[{self.epic}]", message=str(err))
 
 
