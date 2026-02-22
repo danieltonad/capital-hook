@@ -28,8 +28,13 @@ async def startup_event():
     print(f"{len(memory.epics):,} market data updated")
     
     # prefetch perference data
-    preferences = await get_account_preferences()
-    memory.preferences = preferences
+    for trade_mode in [TradeMode.DEMO, TradeMode.LIVE]:
+        preferences = await get_account_preferences(trade_mode)
+        if preferences:
+            print(f"Preferences for {trade_mode.value} fetched and updated in memory.")
+            memory.update_preferences(preferences, trade_mode)
+    print(f"US100 {memory.get_leverage('US100', TradeMode.LIVE)}")
+    print(f"GBPUSD {memory.get_leverage('GBPUSD', TradeMode.LIVE)}")
     
     # initialize jobs
     await jobs.run()

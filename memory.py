@@ -16,11 +16,11 @@ class Memory:
         self.trading_hours: dict = {}
         self.instruments: dict = {}
         self.market_data: dict = {}
-        self.preferences: dict = {}
+        self.preferences: dict = {TradeMode.DEMO.value: {}, TradeMode.LIVE.value: {}}
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
         self.recalibrate: dict = {
-            TradeMode.LIVE.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=20),
+            TradeMode.LIVE.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=10),
             TradeMode.DEMO.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=200)
         }
 
@@ -99,14 +99,18 @@ class Memory:
         else:
             return None, None
     
-    def get_leverage(self, epic: str) -> int:
+    def get_leverage(self, epic: str, trade_mode: TradeMode) -> int:
         """Get the leverage for a given epic."""
         instrument = self.instruments.get(epic, "")
-        return self.preferences.get("leverages", {}).get(instrument, {}).get("current", 1)
+        return self.preferences[trade_mode.value].get("leverages", {}).get(instrument, {}).get("current", 1)
     
-    def get_leverage_available(self, instrument: TradeInstrument) -> list:
+    def get_leverage_available(self, instrument: TradeInstrument, trade_mode: TradeMode) -> list:
         """Get the available leverage for a given instrument."""
-        return self.preferences.get("leverages", {}).get(instrument.value, {}).get("available", [1])
+        return self.preferences[trade_mode.value].get("leverages", {}).get(instrument.value, {}).get("available", [1])
+    
+    def update_preferences(self, preferences: dict, trade_mode: TradeMode):
+        """Update account preferences in memory."""
+        self.preferences[trade_mode.value] = preferences
     
     def get_trade_instrument(self, epic: str) -> TradeInstrument:
         """Get the trade instrument for a given epic."""

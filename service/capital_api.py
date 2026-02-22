@@ -265,11 +265,11 @@ async def update_markets() -> None:
     
     
     
-async def get_account_preferences() -> dict:
+async def get_account_preferences(trade_mode: TradeMode) -> dict:
     try:
         response = await settings.session.get(
-            f"{settings.get_capital_host()}/api/v1/accounts/preferences",
-            headers=memory.capital_auth_header[TradeMode.LIVE.value]
+            f"{settings.get_capital_host(trade_mode)}/api/v1/accounts/preferences",
+            headers=memory.capital_auth_header[trade_mode.value]
         )
         if response.status_code == 200:
             data = response.json()
