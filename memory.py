@@ -104,10 +104,6 @@ class Memory:
         instrument = self.instruments.get(epic, "")
         return self.preferences[trade_mode.value].get("leverages", {}).get(instrument, {}).get("current", 1)
     
-    def get_leverage_available(self, instrument: TradeInstrument, trade_mode: TradeMode) -> list:
-        """Get the available leverage for a given instrument."""
-        return self.preferences[trade_mode.value].get("leverages", {}).get(instrument.value, {}).get("available", [1])
-    
     def update_preferences(self, preferences: dict, trade_mode: TradeMode):
         """Update account preferences in memory."""
         self.preferences[trade_mode.value] = preferences

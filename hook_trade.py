@@ -43,7 +43,7 @@ class HookedTradeExecution:
         self.loss = loss
         self.deal_id = None
         self.exit_criteria = exit_criteria
-        self.leverage = memory.get_leverage(epic)
+        self.leverage = memory.get_leverage(epic, trade_mode)
         self.trade_instrument = memory.get_trade_instrument(epic)
         self.position_mode = trade_mode
         self.trail_sl = trail_sl
