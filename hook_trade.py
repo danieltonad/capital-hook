@@ -61,7 +61,7 @@ class HookedTradeExecution:
             
     def __set_trade_size(self):
         self.capital_size = float(self.trade_amount)
-        leverage_size = self.capital_size * memory.get_leverage(self.epic)
+        leverage_size = self.capital_size * memory.get_leverage(self.epic, self.position_mode)
         self.trade_size = float(leverage_size / self.entry_price)
         if self.trade_instrument == TradeInstrument.CURRENCIES:
             self.trade_size = max(100, round(self.trade_size, -2))
