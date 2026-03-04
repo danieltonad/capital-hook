@@ -14,6 +14,7 @@ class TradingViewWebhookModel(BaseModel):
     trail_sl: Optional[Annotated[int, conint(ge=5)]] = None
     exit_criteria: List[ExitType]
     trade_mode: TradeMode
+    multi_position: Optional[bool] = False
 
 
 

@@ -20,8 +20,8 @@ class Memory:
         self.hooked_trades: Dict[str, TradeDirection] = {}
         self.portfolio: dict = {}
         self.recalibrate: dict = {
-            TradeMode.LIVE.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=10),
-            TradeMode.DEMO.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=200)
+            TradeMode.LIVE.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=15),
+            TradeMode.DEMO.value: TrailRecalibration(profit_percentage=75, trail=15, min_recal_pnl=75)
         }
 
 
